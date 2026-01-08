@@ -1,0 +1,6 @@
+[2026-01-08 09:10:46,779] 26  root - INFO - Starting data ingestion.
+[2026-01-08 09:10:46,780] 69  root - ERROR - Data ingestion failed.
+Traceback (most recent call last):
+  File "C:\2026 Projects\Shield Insurance\src\components\data_ingestion.py", line 31, in initiate_data_ingestion
+    raise FileNotFoundError(
+FileNotFoundError: Input data file not found at: C:\2026 Projects\data\stud.csv
