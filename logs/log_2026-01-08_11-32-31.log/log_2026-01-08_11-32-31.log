@@ -1,0 +1,70 @@
+[2026-01-08 11:32:31,837] 614  root - INFO - Running model_trainer as a script.
+[2026-01-08 11:32:31,838] 681  root - INFO - Starting data transformation pipeline.
+[2026-01-08 11:32:31,871] 689  root - INFO - Loaded train shape: (8000, 15)
+[2026-01-08 11:32:31,871] 690  root - INFO - Loaded test shape:  (2000, 15)
+[2026-01-08 11:32:31,871] 487  root - INFO - [train] Standardizing column names.
+[2026-01-08 11:32:31,874] 487  root - INFO - [test] Standardizing column names.
+[2026-01-08 11:32:31,880] 705  root - INFO - Cleaning enabled.
+[2026-01-08 11:32:31,880] 232  root - INFO - Missing-value strategy=keep: leaving NA for pipeline imputers.
+[2026-01-08 11:32:31,881] 232  root - INFO - Missing-value strategy=keep: leaving NA for pipeline imputers.
+[2026-01-08 11:32:31,890] 241  root - INFO - Dropped 0 duplicate rows.
+[2026-01-08 11:32:31,893] 241  root - INFO - Dropped 0 duplicate rows.
+[2026-01-08 11:32:31,893] 718  root - INFO - Feature engineering enabled.
+[2026-01-08 11:32:31,906] 764  root - INFO - EDA enabled; saving diagnostic artifacts.
+[2026-01-08 11:32:31,906] 320  root - INFO - EDA started for train.
+[2026-01-08 11:32:31,944] 325  root - INFO - Saved stats summary: artifacts\eda\train_stats_summary.csv
+[2026-01-08 11:32:31,957] 336  root - INFO - Saved missingness report: artifacts\eda\train_missingness.csv
+[2026-01-08 11:32:32,469] 355  root - INFO - Saved boxplot: artifacts\eda\train_outliers_boxplot.png
+[2026-01-08 11:32:32,482] 362  root - INFO - Saved correlation CSV: artifacts\eda\train_correlation.csv
+[2026-01-08 11:32:32,482] 364  root - INFO - EDA completed for train.
+[2026-01-08 11:32:32,482] 320  root - INFO - EDA started for test.
+[2026-01-08 11:32:32,515] 325  root - INFO - Saved stats summary: artifacts\eda\test_stats_summary.csv
+[2026-01-08 11:32:32,522] 336  root - INFO - Saved missingness report: artifacts\eda\test_missingness.csv
+[2026-01-08 11:32:32,834] 355  root - INFO - Saved boxplot: artifacts\eda\test_outliers_boxplot.png
+[2026-01-08 11:32:32,839] 362  root - INFO - Saved correlation CSV: artifacts\eda\test_correlation.csv
+[2026-01-08 11:32:32,839] 364  root - INFO - EDA completed for test.
+[2026-01-08 11:32:32,839] 772  root - INFO - VIF enabled; checking multicollinearity on numeric predictors.
+[2026-01-08 11:32:32,849] 628  root - INFO - Saved VIF report: artifacts\vif_report.csv
+[2026-01-08 11:32:32,856] 801  root - INFO - Selected numeric features (3): ['age', 'number_of_dependants', 'income_lakhs']
+[2026-01-08 11:32:32,856] 802  root - INFO - Selected categorical features (10): ['gender', 'region', 'marital_status', 'physical_activity', 'stress_level', 'bmi_category', 'smoking_status', 'employment_status', 'medical_history', 'insurance_plan']
+[2026-01-08 11:32:32,856] 803  root - INFO - Target column: annual_premium_amount
+[2026-01-08 11:32:32,856] 813  root - INFO - Fitting preprocessor on training data only.
+[2026-01-08 11:32:32,911] 843  root - INFO - Saved preprocessor: artifacts\preprocessor.pkl
+[2026-01-08 11:32:32,912] 844  root - INFO - Saved transformed train: artifacts\train_transformed.npy
+[2026-01-08 11:32:32,912] 845  root - INFO - Saved transformed test:  artifacts\test_transformed.npy
+[2026-01-08 11:32:32,912] 846  root - INFO - Transformation done. Train arr: (8000, 40) | Test arr: (2000, 40)
+[2026-01-08 11:32:32,913] 628  root - INFO - Preprocessor used: artifacts\preprocessor.pkl
+[2026-01-08 11:32:32,913] 469  root - INFO - Starting model training pipeline.
+[2026-01-08 11:32:32,913] 476  root - INFO - Train(full): X=(8000, 39) y=(8000,)
+[2026-01-08 11:32:32,914] 477  root - INFO - Test:       X=(2000, 39) y=(2000,)
+[2026-01-08 11:32:32,916] 486  root - INFO - Internal split -> Train=(6400, 39) | Val=(1600, 39)
+[2026-01-08 11:32:32,918] 501  root - INFO - Training baseline: LinearRegression
+[2026-01-08 11:32:32,933] 509  root - INFO - Training baseline: Ridge
+[2026-01-08 11:32:32,942] 518  root - INFO - Training baseline: Lasso
+[2026-01-08 11:32:33,155] 310  root - INFO - Running RandomizedSearchCV for XGBoost (n_iter=20, cv=3).
+[2026-01-08 11:32:52,152] 315  root - INFO - XGBoost best params: {'subsample': 1.0, 'reg_lambda': 1.0, 'reg_alpha': 0.01, 'n_estimators': 300, 'min_child_weight': 5, 'max_depth': 3, 'learning_rate': 0.2, 'colsample_bytree': 0.7}
+[2026-01-08 11:32:52,153] 316  root - INFO - XGBoost best CV score: 0.993110
+[2026-01-08 11:32:52,153] 319  root - INFO - Attempting early-stopping refinement (best model).
+[2026-01-08 11:32:52,153] 341  root - WARNING - Early stopping not supported; keeping CV-best model.
+[2026-01-08 11:32:52,171] 546  root - INFO - Saved leaderboard: artifacts\model_leaderboard.csv
+[2026-01-08 11:32:52,176] 552  root - INFO - Saved winner model: artifacts\model.pkl
+[2026-01-08 11:32:52,194] 170  root - INFO - Saved notebook-style results_df: artifacts\results_predictions.csv
+[2026-01-08 11:32:52,748] 241  root - INFO - Saved residual plots: artifacts\residual_hist.png | artifacts\residual_scatter.png
+[2026-01-08 11:32:53,153] 260  root - INFO - Saved seaborn residual histplot: artifacts\residual_hist_seaborn.png
+[2026-01-08 11:32:53,160] 206  root - INFO - Saved feature_importances_ to: artifacts\feature_importance.csv
+[2026-01-08 11:32:55,916] 395  root - INFO - Running SHAP TreeExplainer: background=(500, 39), explain=(1000, 39)
+[2026-01-08 11:32:55,942] 601  root - ERROR - Model training pipeline failed.
+Traceback (most recent call last):
+  File "C:\2026 Projects\Shield Insurance\src\components\model_trainer.py", line 568, in initiate_model_trainer
+    self._run_shap_analysis(
+  File "C:\2026 Projects\Shield Insurance\src\components\model_trainer.py", line 398, in _run_shap_analysis
+    explainer = shap.TreeExplainer(model, data=X_bg)
+  File "C:\2026 Projects\Shield Insurance\venv\lib\site-packages\shap\explainers\_tree.py", line 278, in __init__
+    self.model = TreeEnsemble(model, self.data, self.data_missing, model_output)
+  File "C:\2026 Projects\Shield Insurance\venv\lib\site-packages\shap\explainers\_tree.py", line 1279, in __init__
+    self._set_xgboost_model_attributes(
+  File "C:\2026 Projects\Shield Insurance\venv\lib\site-packages\shap\explainers\_tree.py", line 1506, in _set_xgboost_model_attributes
+    loader = XGBTreeModelLoader(self.original_model)
+  File "C:\2026 Projects\Shield Insurance\venv\lib\site-packages\shap\explainers\_tree.py", line 2104, in __init__
+    self.base_score = float(learner_model_param["base_score"])
+ValueError: could not convert string to float: '[1.9488639E4]'
