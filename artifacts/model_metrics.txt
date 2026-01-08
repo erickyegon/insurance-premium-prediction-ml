@@ -1,0 +1,15 @@
+Best model: XGBoost(RandomSearch)
+Saved to: artifacts\model.pkl
+TEST R2: 0.993402
+TEST RMSE: 712.675413
+TEST MAE: 556.521786
+
+Artifacts:
+- Leaderboard: artifacts\model_leaderboard.csv
+- Results DF: artifacts\results_predictions.csv
+- Feature importance: artifacts\feature_importance.csv
+- Residual hist: artifacts\residual_hist.png
+- Residual scatter: artifacts\residual_scatter.png
+- SHAP values: artifacts\shap_values.npz
+- SHAP dot: artifacts\shap_summary_dot.png
+- SHAP bar: artifacts\shap_summary_bar.png
