@@ -97,7 +97,9 @@ Our XGBoost model achieved **state-of-the-art performance** compared to baseline
 
 <div align="center">
 
-![Residual Scatter](artifacts/plots/residual_scatter.png)
+![Residual Scatter](artifacts/residual_scatter.png)
+![Residual Scatter](artifacts/residual_scatter.png)
+![SHAP Bar](artifacts/shap_summary_bar.png)
 
 *Residual scatter plot showing random distribution around zero - hallmark of excellent model fit*
 
@@ -111,7 +113,7 @@ Our XGBoost model achieved **state-of-the-art performance** compared to baseline
 
 <div align="center">
 
-![Residual Distribution](artifacts/plots/residual_hist.png)
+![Residual Distribution](artifacts/residual_hist.png)
 
 *Residual distribution approximately normal and centered at 0*
 
