@@ -1,0 +1,63 @@
+[2026-01-08 12:35:00,251] 618  root - INFO - Running as script.
+[2026-01-08 12:35:00,253] 656  root - INFO - Starting data transformation pipeline.
+[2026-01-08 12:35:00,295] 661  root - INFO - Loaded train shape: (8000, 15)
+[2026-01-08 12:35:00,296] 662  root - INFO - Loaded test shape:  (2000, 15)
+[2026-01-08 12:35:00,296] 480  root - INFO - [train] Standardizing column names.
+[2026-01-08 12:35:00,298] 480  root - INFO - [test] Standardizing column names.
+[2026-01-08 12:35:00,299] 673  root - INFO - Cleaning enabled.
+[2026-01-08 12:35:00,300] 202  root - INFO - Missing-value strategy=keep: leaving NA for pipeline imputers.
+[2026-01-08 12:35:00,301] 202  root - INFO - Missing-value strategy=keep: leaving NA for pipeline imputers.
+[2026-01-08 12:35:00,312] 214  root - INFO - Dropped 0 duplicate rows.
+[2026-01-08 12:35:00,316] 214  root - INFO - Dropped 0 duplicate rows.
+[2026-01-08 12:35:00,317] 681  root - INFO - Feature engineering enabled.
+[2026-01-08 12:35:00,317] 413  root - INFO - Target leakage disallowed; no target-derived features.
+[2026-01-08 12:35:00,323] 444  root - INFO - Engineered 0 new features.
+[2026-01-08 12:35:00,324] 413  root - INFO - Target leakage disallowed; no target-derived features.
+[2026-01-08 12:35:00,328] 444  root - INFO - Engineered 0 new features.
+[2026-01-08 12:35:00,332] 724  root - INFO - EDA enabled; saving artifacts.
+[2026-01-08 12:35:00,333] 313  root - INFO - EDA started for train.
+[2026-01-08 12:35:00,385] 318  root - INFO - Saved stats summary: artifacts\eda\train_stats_summary.csv
+[2026-01-08 12:35:00,402] 329  root - INFO - Saved missingness report: artifacts\eda\train_missingness.csv
+[2026-01-08 12:35:01,878] 353  root - INFO - Saved boxplot: artifacts\eda\train_outliers_boxplot.png
+[2026-01-08 12:35:01,903] 359  root - INFO - Saved correlation CSV: artifacts\eda\train_correlation.csv
+[2026-01-08 12:35:02,957] 378  root - INFO - Saved correlation heatmap: artifacts\eda\train_correlation_heatmap.png
+[2026-01-08 12:35:02,957] 380  root - INFO - EDA completed for train.
+[2026-01-08 12:35:02,957] 313  root - INFO - EDA started for test.
+[2026-01-08 12:35:02,993] 318  root - INFO - Saved stats summary: artifacts\eda\test_stats_summary.csv
+[2026-01-08 12:35:03,002] 329  root - INFO - Saved missingness report: artifacts\eda\test_missingness.csv
+[2026-01-08 12:35:03,875] 353  root - INFO - Saved boxplot: artifacts\eda\test_outliers_boxplot.png
+[2026-01-08 12:35:03,882] 359  root - INFO - Saved correlation CSV: artifacts\eda\test_correlation.csv
+[2026-01-08 12:35:04,773] 378  root - INFO - Saved correlation heatmap: artifacts\eda\test_correlation_heatmap.png
+[2026-01-08 12:35:04,773] 380  root - INFO - EDA completed for test.
+[2026-01-08 12:35:04,784] 604  root - INFO - Saved VIF report: artifacts\vif_report.csv
+[2026-01-08 12:35:04,796] 747  root - INFO - Numeric features (3): ['age', 'number_of_dependants', 'income_lakhs']
+[2026-01-08 12:35:04,797] 748  root - INFO - Categorical features (10): ['gender', 'region', 'marital_status', 'physical_activity', 'stress_level', 'bmi_category', 'smoking_status', 'employment_status', 'medical_history', 'insurance_plan']
+[2026-01-08 12:35:04,797] 749  root - INFO - Target: annual_premium_amount
+[2026-01-08 12:35:04,797] 753  root - INFO - Fitting preprocessor on train.
+[2026-01-08 12:35:04,860] 774  root - INFO - Saved preprocessor: artifacts\preprocessor.pkl
+[2026-01-08 12:35:04,860] 775  root - INFO - Saved train: artifacts\train_transformed.npy
+[2026-01-08 12:35:04,860] 776  root - INFO - Saved test: artifacts\test_transformed.npy
+[2026-01-08 12:35:04,860] 777  root - INFO - Shapes: Train (8000, 40) | Test (2000, 40)
+[2026-01-08 12:35:04,861] 628  root - INFO - Preprocessor: artifacts\preprocessor.pkl
+[2026-01-08 12:35:04,861] 507  root - INFO - Starting training.
+[2026-01-08 12:35:04,862] 514  root - INFO - Train: X=(8000, 39) y=(8000,)
+[2026-01-08 12:35:04,862] 515  root - INFO - Test: X=(2000, 39) y=(2000,)
+[2026-01-08 12:35:04,864] 520  root - INFO - Internal: Train=(6400, 39) Val=(1600, 39)
+[2026-01-08 12:35:04,867] 530  root - INFO - Baseline: LinearRegression
+[2026-01-08 12:35:04,884] 538  root - INFO - Baseline: Ridge
+[2026-01-08 12:35:04,890] 547  root - INFO - Baseline: Lasso
+[2026-01-08 12:35:05,265] 324  root - INFO - RandomizedSearchCV for XGBoost (n_iter=20, cv=3).
+[2026-01-08 12:35:26,838] 329  root - INFO - Best params: {'subsample': 1.0, 'reg_lambda': 1.0, 'reg_alpha': 0.01, 'n_estimators': 300, 'min_child_weight': 5, 'max_depth': 3, 'learning_rate': 0.2, 'colsample_bytree': 0.7}
+[2026-01-08 12:35:26,838] 330  root - INFO - Best CV score: 0.993110
+[2026-01-08 12:35:26,838] 333  root - INFO - Early-stopping refinement.
+[2026-01-08 12:35:26,838] 351  root - WARNING - Early stopping skipped; using CV-best.
+[2026-01-08 12:35:26,851] 571  root - INFO - Saved leaderboard: artifacts\model_leaderboard.csv
+[2026-01-08 12:35:26,857] 575  root - INFO - Saved model: artifacts\model.pkl
+[2026-01-08 12:35:26,884] 180  root - INFO - Saved results_df: artifacts\results_predictions.csv
+[2026-01-08 12:35:28,449] 272  root - INFO - Saved residuals: artifacts\residual_hist.png | artifacts\residual_scatter.png
+[2026-01-08 12:35:28,459] 206  root - INFO - Saved feature_importances_: artifacts\feature_importance.csv
+[2026-01-08 12:35:30,270] 407  root - INFO - TreeExplainer: bg=(500, 39), ex=(1000, 39)
+[2026-01-08 12:35:30,299] 455  root - WARNING - TreeExplainer failed; fallback. could not convert string to float: '[1.9488639E4]'
+[2026-01-08 12:35:30,300] 459  root - INFO - Fallback Explainer.
+[2026-01-08 12:36:37,222] 471  root - INFO - Saved SHAP (fallback): artifacts\shap_values.npz
+[2026-01-08 12:36:39,994] 603  root - INFO - Winner: XGBoost(RandomSearch) | R2=0.9934

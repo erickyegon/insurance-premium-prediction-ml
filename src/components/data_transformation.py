@@ -4,46 +4,38 @@ data_transformation.py
 
 Purpose
 -------
-A single, unified "data transformation" module that *combines*:
-
-1) Data cleaning (standardize column names, handle missing values, duplicates,
-   optional outlier clipping / filtering).
-2) Optional EDA artifact generation (stats summary, missingness report, boxplots,
-   correlations) saved under artifacts/eda/.
-3) Feature engineering (safe, schema-aware derived features).
-4) Optional multicollinearity checks (VIF) on numeric features *only*, with
-   controlled feature dropping (to avoid unstable models).
-5) End-to-end preprocessing pipeline creation:
-   - Numeric: impute -> scale
-   - Categorical: impute -> one-hot
-6) Fit on train only, transform train + test, then append target column.
-7) Save artifacts:
-   - preprocessor.pkl
-   - train_transformed.npy
-   - test_transformed.npy
-   - optional EDA artifacts, VIF report, feature lists
+A single, unified "data transformation" module that combines:
+1. Data cleaning (standardize names, handle missing/duplicates, optional outliers).
+2. Optional EDA artifacts (stats, missingness, boxplots, correlations, heatmaps).
+3. Feature engineering (schema-aware, leakage-safe derived features).
+4. Optional multicollinearity checks (VIF on numerics only, with controlled dropping).
+5. End-to-end preprocessing pipeline (impute, scale, one-hot).
+6. Fit on train, transform train/test, append target.
+7. Save artifacts (preprocessor, transformed arrays, EDA files, VIF report).
 
 Design Goals (Advanced / Production)
------------------------------------
-- Robustness to schema drift (missing columns, unexpected dtypes, category drift)
-- Reproducible transformations (fit on train only; store preprocessor)
-- Leakage prevention (explicit checks + safe feature engineering)
-- Clear logging & error handling (CustomException + logging)
-- Config-driven behavior (toggle cleaning/EDA/FE/VIF; thresholds; expected columns)
-- Trainer-friendly outputs (.npy arrays with X + y concatenated)
+------------------------------------
+- Robust to schema drift: Infers columns if not specified, validates presence.
+- Reproducible: Fits on train only; saves preprocessor for inference.
+- Leakage prevention: Explicit checks in FE; no target-derived features.
+- Logging & errors: CustomException + detailed logging for debugging.
+- Config-driven: Toggles for cleaning/EDA/FE/VIF; thresholds; expected schema.
+- Trainer-friendly: Outputs .npy arrays with X + y concatenated.
+- Advanced: Added IQR outlier option; stratified inference if needed.
+
+Visualization Improvements (Modern Principles)
+----------------------------------------------
+- Use Seaborn for aesthetics: Whitegrid theme, muted palette (colorblind-friendly, minimal).
+- Clarity: Descriptive titles/labels, rotated ticks, annotations, tight layouts.
+- Visibility: Larger figures, KDE in histograms, colormaps in heatmaps.
+- Professionalism: High DPI (300), sans-serif fonts via theme.
+- Fallback: Matplotlib if sns unavailable; skip plots if libs missing.
 
 Assumptions & Notes
 -------------------
-- This module expects ingestion outputs train.csv and test.csv by default under artifacts/.
-- Target column exists in BOTH train and test (for evaluation). If you only have target
-  in train (common in Kaggle), set `require_target_in_test=False` and the module will
-  return y_test as None and skip concatenation for test if missing.
-- VIF is computed ONLY for numeric predictors (raw/engineered numeric). VIF for one-hot
-  encoded columns is not recommended (high-dimensional and unstable), so we do not do it.
-- Feature engineering is schema-aware: it only creates features when required columns exist.
-- Outlier logic is intentionally conservative and configurable. In many real ML systems,
-  robust scaling or tree models handle outliers better than dropping rows; choose carefully.
-
+- Expects train.csv/test.csv from ingestion (with target in both by default).
+- VIF only on numerics (pre-onehot; avoids instability).
+- Outliers: Conservative; prefer robust scalers/trees over dropping.
 """
 
 from __future__ import annotations
@@ -62,19 +54,23 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-# Optional (only used if VIF enabled)
+# Optional VIF
 try:
     from statsmodels.stats.outliers_influence import variance_inflation_factor
-except Exception:
+except ImportError:
     variance_inflation_factor = None
 
 # Optional plotting (EDA)
 try:
     import matplotlib.pyplot as plt
-except Exception:
+except ImportError:
     plt = None
 
-# Your project's exception + logger
+try:
+    import seaborn as sns
+except ImportError:
+    sns = None
+
 from src.exception import CustomException
 from src.logger import logging
 
@@ -85,111 +81,79 @@ from src.logger import logging
 @dataclass(frozen=True)
 class DataTransformationConfig:
     """
-    Configuration for the entire transformation pipeline.
-
-    Modify these defaults to match your project/dataset. Keep it config-driven.
+    Config for transformation pipeline. Frozen for immutability.
+    
+    Attributes:
+        artifacts_dir: Root for outputs.
+        train_data_path/test_data_path: Inputs from ingestion.
+        preprocessor_obj_file_path: Saved pipeline.
+        transformed_train_file_path/transformed_test_file_path: .npy outputs.
+        eda_artifacts_dir: For EDA files/plots.
+        feature_manifest_path: JSON of selected features (for auditing).
+        vif_report_path: CSV of VIF scores.
+        target_column: Name of y.
+        require_target_in_test: If False, allow missing y in test (e.g., inference).
+        enable_cleaning: Toggle cleaning steps.
+        standardize_column_names: Normalize column names.
+        missing_value_strategy: "drop" (aggressive) or "keep" (for imputers).
+        drop_duplicates: Remove duplicate rows.
+        outlier_strategy: None, "clip" (winsorize), "filter" (drop), or "iqr" (advanced IQR method).
+        outlier_lower_q/outlier_upper_q: Quantiles for clip/filter.
+        outlier_multiplier: For IQR strategy (e.g., 1.5 for mild outliers).
+        outlier_numeric_cols: Specific cols; None infers.
+        enable_eda: Toggle EDA artifacts.
+        eda_save_boxplots/eda_save_correlation/eda_save_heatmap: Plot toggles.
+        eda_max_boxplot_cols: Limit for plots.
+        use_only_categorical: For baseline (ignore numerics).
+        force_dense_output: Convert sparse to dense.
+        categorical_columns/numerical_columns: Override inferred.
+        enable_feature_engineering: Toggle FE.
+        disallow_target_leakage: Prevent y in FE.
+        enable_vif: Toggle multicollinearity check.
+        vif_threshold: Drop if VIF > this.
+        vif_max_features_to_drop: Limit drops.
+        vif_exempt_features: Protect critical features.
     """
-
-    # Root artifacts directory
     artifacts_dir: Path = Path("artifacts")
-
-    # Ingestion outputs (defaults)
     train_data_path: Path = Path("artifacts/train.csv")
     test_data_path: Path = Path("artifacts/test.csv")
-
-    # Outputs from this module
     preprocessor_obj_file_path: Path = Path("artifacts/preprocessor.pkl")
     transformed_train_file_path: Path = Path("artifacts/train_transformed.npy")
     transformed_test_file_path: Path = Path("artifacts/test_transformed.npy")
-
-    # Optional subfolders / outputs
     eda_artifacts_dir: Path = Path("artifacts/eda")
     feature_manifest_path: Path = Path("artifacts/feature_manifest.json")
     vif_report_path: Path = Path("artifacts/vif_report.csv")
-
-    # Target configuration
     target_column: str = "annual_premium_amount"
-
-    # If True, require target in both train AND test; if False, allow missing in test
     require_target_in_test: bool = True
-
-    # -----------------------------
-    # Cleaning toggles
-    # -----------------------------
     enable_cleaning: bool = True
     standardize_column_names: bool = True
-
-    # Missing values:
-    # - "drop": drop any rows with NA (aggressive; can lose data)
-    # - "keep": keep NA; preprocessing imputers handle them later
     missing_value_strategy: str = "keep"  # "drop" or "keep"
-
-    # Duplicates
     drop_duplicates: bool = True
-
-    # Optional outlier handling for numeric columns:
-    # - None: no outlier handling
-    # - "clip": clip to percentiles (winsorization)
-    # - "filter": drop rows outside percentiles
-    outlier_strategy: Optional[str] = None  # None | "clip" | "filter"
+    outlier_strategy: Optional[str] = None  # None | "clip" | "filter" | "iqr"
     outlier_lower_q: float = 0.01
     outlier_upper_q: float = 0.99
-    outlier_numeric_cols: Optional[Tuple[str, ...]] = None  # if None, infer numeric cols
-
-    # -----------------------------
-    # EDA toggles
-    # -----------------------------
+    outlier_multiplier: float = 1.5  # For IQR
+    outlier_numeric_cols: Optional[Tuple[str, ...]] = None
     enable_eda: bool = True
     eda_save_boxplots: bool = True
     eda_save_correlation: bool = True
-    eda_max_boxplot_cols: int = 30  # avoid unreadable plots on wide datasets
-
-    # -----------------------------
-    # Feature selection & preprocessing
-    # -----------------------------
-    # If True: only categorical predictors (useful baseline model)
+    eda_save_heatmap: bool = True  # New: visual heatmap
+    eda_max_boxplot_cols: int = 30
     use_only_categorical: bool = False
-
-    # If True: after transform, convert sparse -> dense arrays (simplifies trainers)
     force_dense_output: bool = True
-
-    # If provided, these override inferred columns.
-    # If left None, we infer:
-    # - categorical: object/category/bool
-    # - numeric: int/float
     categorical_columns: Optional[Tuple[str, ...]] = (
-        "gender",
-        "region",
-        "marital_status",
-        "physical_activity",
-        "stress_level",
-        "bmi_category",
-        "smoking_status",
-        "employment_status",
-        "medical_history",
-        "insurance_plan",
+        "gender", "region", "marital_status", "physical_activity",
+        "stress_level", "bmi_category", "smoking_status",
+        "employment_status", "medical_history", "insurance_plan",
     )
     numerical_columns: Optional[Tuple[str, ...]] = (
-        "age",
-        "number_of_dependants",
-        "income_lakhs",
+        "age", "number_of_dependants", "income_lakhs",
     )
-
-    # -----------------------------
-    # Feature engineering toggles
-    # -----------------------------
     enable_feature_engineering: bool = True
-
-    # Leakage guard: do NOT engineer features using target_column
     disallow_target_leakage: bool = True
-
-    # -----------------------------
-    # VIF / multicollinearity control
-    # -----------------------------
     enable_vif: bool = True
     vif_threshold: float = 10.0
     vif_max_features_to_drop: int = 5
-    # Some numeric features might be policy-required or business-critical; exempt them from dropping.
     vif_exempt_features: Tuple[str, ...] = ()
 
 
@@ -198,16 +162,16 @@ class DataTransformationConfig:
 # ---------------------------------------------------------------------
 class DataCleaning:
     """
-    Cleaning utilities kept inside this module to satisfy the request for "single file".
-
-    NOTE:
-    - Keep cleaning minimal and reversible. Heavy cleaning can distort signal.
-    - For missing values, prefer keeping NA and imputing in pipeline (unless you
-      have strong reasons to drop).
+    Utilities for data cleaning. Kept modular for reusability.
+    
+    Rationale: Cleaning is minimal to preserve data; heavy ops (e.g., outliers) are optional.
     """
-
     @staticmethod
     def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Standardizes column names: strip, replace spaces/dashes, lowercase.
+        Improves consistency across datasets.
+        """
         df = df.copy()
         df.columns = (
             df.columns.astype(str)
@@ -220,6 +184,12 @@ class DataCleaning:
 
     @staticmethod
     def handle_missing_values(df: pd.DataFrame, strategy: str) -> pd.DataFrame:
+        """
+        Handles missing values based on strategy.
+        
+        - "drop": Removes rows with any NA (data loss risk).
+        - "keep": Retains NA for downstream imputers (preferred for ML).
+        """
         if strategy not in ("drop", "keep"):
             raise ValueError("missing_value_strategy must be 'drop' or 'keep'")
 
@@ -234,6 +204,9 @@ class DataCleaning:
 
     @staticmethod
     def handle_duplicates(df: pd.DataFrame, drop_duplicates: bool) -> pd.DataFrame:
+        """
+        Optionally drops duplicate rows to prevent overfitting.
+        """
         df = df.copy()
         if drop_duplicates:
             before = len(df)
@@ -247,23 +220,28 @@ class DataCleaning:
         strategy: Optional[str],
         lower_q: float,
         upper_q: float,
+        multiplier: float,
         numeric_cols: Optional[List[str]] = None,
         exclude_cols: Optional[List[str]] = None,
     ) -> pd.DataFrame:
         """
-        Conservative percentile-based outlier handling.
-
-        - "clip": winsorize to [lower_q, upper_q]
-        - "filter": drop rows outside [lower_q, upper_q]
+        Handles outliers in numeric columns.
+        
+        Strategies:
+        - None: Skip.
+        - "clip": Winsorize to quantiles.
+        - "filter": Drop rows outside quantiles.
+        - "iqr": Advanced; uses Q1 - multiplier*IQR, Q3 + multiplier*IQR (Tukey's method).
+        
+        Excludes specified cols (e.g., target). Infers numerics if none provided.
         """
         if strategy is None:
             return df
 
-        if strategy not in ("clip", "filter"):
-            raise ValueError("outlier_strategy must be None, 'clip', or 'filter'")
+        if strategy not in ("clip", "filter", "iqr"):
+            raise ValueError("outlier_strategy must be None, 'clip', 'filter', or 'iqr'")
 
         df = df.copy()
-
         exclude_cols = exclude_cols or []
         if numeric_cols is None:
             numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
@@ -273,14 +251,20 @@ class DataCleaning:
             logging.info("Outlier handling skipped: no numeric columns selected.")
             return df
 
-        # Compute bounds on current df
+        # Compute bounds
         bounds = {}
         for col in numeric_cols:
-            series = df[col]
-            if series.isna().all():
+            series = df[col].dropna()
+            if series.empty:
                 continue
-            lo = series.quantile(lower_q)
-            hi = series.quantile(upper_q)
+            if strategy == "iqr":
+                q1, q3 = series.quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lo = q1 - multiplier * iqr
+                hi = q3 + multiplier * iqr
+            else:
+                lo = series.quantile(lower_q)
+                hi = series.quantile(upper_q)
             bounds[col] = (lo, hi)
 
         if not bounds:
@@ -293,38 +277,47 @@ class DataCleaning:
             logging.info("Outlier strategy=clip applied to %s numeric columns.", len(bounds))
             return df
 
-        # strategy == "filter"
+        # "filter" or "iqr" (both drop rows)
         before = len(df)
         mask = np.ones(len(df), dtype=bool)
         for col, (lo, hi) in bounds.items():
             mask &= df[col].between(lo, hi) | df[col].isna()
         df = df.loc[mask].copy()
-        logging.info("Outlier strategy=filter dropped %s rows.", before - len(df))
+        logging.info("Outlier strategy=%s dropped %s rows.", strategy, before - len(df))
         return df
 
 
 # ---------------------------------------------------------------------
-# EDA
+# Data Exploration (EDA)
 # ---------------------------------------------------------------------
 class DataExploration:
     """
-    Lightweight EDA artifact generator. The goal isn't beautiful charts—it's
-    reproducible, audit-friendly diagnostics saved to disk.
+    Generates EDA artifacts for diagnostics. Focus on reproducibility over interactivity.
+    
+    Visualizations follow modern principles: Clean, informative, professional.
+    Uses Seaborn for better defaults if available; falls back to Matplotlib.
     """
-
-    def __init__(self, eda_dir: Path):
+    def __init__(self, eda_dir: Path, config: DataTransformationConfig):
         self.eda_dir = eda_dir
+        self.config = config
         self.eda_dir.mkdir(parents=True, exist_ok=True)
 
+        # Set modern theme if libs available
+        if sns:
+            sns.set_theme(style="whitegrid", palette="muted", font_scale=1.1)  # Professional, clear
+
     def run(self, df: pd.DataFrame, df_name: str = "dataset") -> None:
+        """
+        Runs EDA: stats, missingness, boxplots, correlation CSV/heatmap.
+        """
         logging.info("EDA started for %s.", df_name)
 
-        # 1) Basic stats
+        # 1) Basic stats (always save)
         stats = df.describe(include="all").transpose()
         stats.to_csv(self.eda_dir / f"{df_name}_stats_summary.csv")
         logging.info("Saved stats summary: %s", self.eda_dir / f"{df_name}_stats_summary.csv")
 
-        # 2) Missingness report
+        # 2) Missingness report (always save)
         miss = pd.DataFrame(
             {
                 "missing_count": df.isna().sum(),
@@ -339,27 +332,50 @@ class DataExploration:
             logging.warning("matplotlib not available; skipping plot artifacts.")
             return
 
-        # 3) Boxplots for numeric columns (subset if too many)
+        # 3) Boxplots for numerics (subset for readability)
         numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
-        if numeric_cols:
-            max_cols = min(len(numeric_cols), 30)
+        if numeric_cols and self.config.eda_save_boxplots:
+            max_cols = min(len(numeric_cols), self.config.eda_max_boxplot_cols)
             plot_cols = numeric_cols[:max_cols]
-            plt.figure(figsize=(max(12, max_cols * 0.6), 8))
-            df[plot_cols].boxplot()
-            plt.title(f"{df_name}: Outlier Detection (Numeric Features)")
-            plt.xticks(rotation=45, ha="right")
-            out_path = self.eda_dir / f"{df_name}_outliers_boxplot.png"
+            fig, ax = plt.subplots(figsize=(max(12, max_cols * 0.8), 8))
+            if sns:
+                sns.boxplot(data=df[plot_cols], ax=ax, palette="muted")  # Professional palette
+            else:
+                df[plot_cols].boxplot(ax=ax)
+            ax.set_title(f"{df_name.capitalize()}: Distribution and Outliers (Numeric Features)", fontsize=14)
+            ax.set_xlabel("Features", fontsize=12)
+            ax.set_ylabel("Values", fontsize=12)
+            ax.tick_params(axis='x', rotation=45)
             plt.tight_layout()
-            plt.savefig(out_path)
+            out_path = self.eda_dir / f"{df_name}_outliers_boxplot.png"
+            plt.savefig(out_path, dpi=300)  # High-res for professionalism
             plt.close()
             logging.info("Saved boxplot: %s", out_path)
 
-        # 4) Correlation heatmap-like matrix (CSV) to avoid heavy plotting dependencies
-        # (Plotting heatmaps is optional; CSV is universally useful.)
-        if numeric_cols:
+        # 4) Correlation (CSV + optional heatmap)
+        if numeric_cols and self.config.eda_save_correlation:
             corr = df[numeric_cols].corr(numeric_only=True)
             corr.to_csv(self.eda_dir / f"{df_name}_correlation.csv")
             logging.info("Saved correlation CSV: %s", self.eda_dir / f"{df_name}_correlation.csv")
+
+            if self.config.eda_save_heatmap:  # New visual
+                fig, ax = plt.subplots(figsize=(12, 10))
+                if sns:
+                    sns.heatmap(corr, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5, ax=ax)  # Clear, annotated
+                else:
+                    ax.imshow(corr, cmap="coolwarm")
+                    # Manual annotations for fallback
+                    for i in range(len(numeric_cols)):
+                        for j in range(len(numeric_cols)):
+                            ax.text(j, i, f"{corr.iloc[i, j]:.2f}", ha="center", va="center")
+                ax.set_title(f"{df_name.capitalize()}: Correlation Heatmap (Numeric Features)", fontsize=14)
+                ax.set_xticklabels(numeric_cols, rotation=45, ha="right", fontsize=10)
+                ax.set_yticklabels(numeric_cols, rotation=0, fontsize=10)
+                plt.tight_layout()
+                out_path = self.eda_dir / f"{df_name}_correlation_heatmap.png"
+                plt.savefig(out_path, dpi=300)
+                plt.close()
+                logging.info("Saved correlation heatmap: %s", out_path)
 
         logging.info("EDA completed for %s.", df_name)
 
@@ -369,110 +385,87 @@ class DataExploration:
 # ---------------------------------------------------------------------
 class FeatureEngineer:
     """
-    Schema-aware feature engineering with explicit anti-leakage rules.
-
-    Strategy:
-    - Only add features when required source columns exist.
-    - Never create engineered features from target if disallow_target_leakage=True.
-    - Keep features interpretable and broadly useful:
-        * ratios (income per dependent)
-        * transformations (log1p income)
-        * interactions (age * income)
-        * counts/flags (has_dependents)
+    Schema-aware feature engineering. Conditional on column presence to handle drift.
+    
+    Rationale: Features are interpretable and leakage-safe (no target use).
+    Advanced: Adds interactions, transformations for non-linearity/skew.
     """
-
     def __init__(self, target_col: str, disallow_target_leakage: bool = True):
         self.target_col = target_col
         self.disallow_target_leakage = disallow_target_leakage
 
     def add_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Adds engineered features if source columns exist.
+        
+        Features:
+        - Binary flags (e.g., has_dependents).
+        - Ratios (e.g., income_per_dependent; handles zero-division).
+        - Transformations (e.g., log for skew).
+        - Interactions/Polynomials (e.g., age_squared for non-linearity).
+        
+        Leakage guard: Skips if target involved and disallowed.
+        """
         df = df.copy()
 
-        # -------------------------
         # Leakage guard
-        # -------------------------
         if self.disallow_target_leakage and self.target_col in df.columns:
-            # We do NOT use target column to create any predictors.
-            # This is a common silent bug in notebooks.
-            pass
+            logging.info("Target leakage disallowed; no target-derived features.")
 
-        # Helper to safely check columns
         def has_cols(cols: List[str]) -> bool:
             return all(c in df.columns for c in cols)
 
-        # -------------------------
-        # Example engineered features (insurance-like schema)
-        # -------------------------
         # 1) has_dependents flag
         if "number_of_dependants" in df.columns:
             df["has_dependents"] = (pd.to_numeric(df["number_of_dependants"], errors="coerce").fillna(0) > 0).astype(int)
 
-        # 2) income per dependent (avoid division by zero)
+        # 2) income per dependent (avoid div/0)
         if has_cols(["income_lakhs", "number_of_dependants"]):
             income = pd.to_numeric(df["income_lakhs"], errors="coerce")
             deps = pd.to_numeric(df["number_of_dependants"], errors="coerce").replace(0, np.nan)
             df["income_per_dependent"] = (income / deps).replace([np.inf, -np.inf], np.nan)
 
-        # 3) log income (robustness to skew)
+        # 3) log income (handles skew)
         if "income_lakhs" in df.columns:
             income = pd.to_numeric(df["income_lakhs"], errors="coerce")
             df["log_income_lakhs"] = np.log1p(income.clip(lower=0))
 
-        # 4) age bins (keep numeric representation; you can also do categorical bins if preferred)
+        # 4) age squared (captures non-linear effects)
         if "age" in df.columns:
             age = pd.to_numeric(df["age"], errors="coerce")
             df["age_squared"] = age ** 2
 
-        # 5) interaction: age * income
+        # 5) age * income interaction
         if has_cols(["age", "income_lakhs"]):
             age = pd.to_numeric(df["age"], errors="coerce")
             income = pd.to_numeric(df["income_lakhs"], errors="coerce")
             df["age_income_interaction"] = age * income
 
-        # -------------------------
-        # Optional: if you later extend to other datasets, add guarded blocks here.
-        # Keep everything conditional and leakage-safe.
-        # -------------------------
-
+        logging.info("Engineered %s new features.", len(df.columns) - len(df.columns))  # Delta
         return df
 
 
 # ---------------------------------------------------------------------
-# Data Transformation (Main Orchestrator)
+# Data Transformation (Orchestrator)
 # ---------------------------------------------------------------------
 class DataTransformation:
     """
-    Orchestrates:
-      - reading train/test
-      - cleaning
-      - optional EDA
-      - feature engineering
-      - optional VIF numeric feature pruning
-      - preprocessing fit/transform
-      - artifact saving
-
-    Output:
-      - train_arr: np.ndarray (X_transformed + y)
-      - test_arr: np.ndarray  (X_transformed + y) OR (X_transformed) if y missing and require_target_in_test=False
-      - preprocessor_path: str
+    Main class: Orchestrates load, clean, EDA, FE, VIF, preprocess, save.
+    
+    Outputs: Transformed .npy (X + y), preprocessor.pkl.
     """
-
     def __init__(self, config: DataTransformationConfig | None = None):
         self.config = config or DataTransformationConfig()
         self.feature_engineer = FeatureEngineer(
             target_col=self.config.target_column,
             disallow_target_leakage=self.config.disallow_target_leakage,
         )
-        self.eda = DataExploration(self.config.eda_artifacts_dir)
+        self.eda = DataExploration(self.config.eda_artifacts_dir, self.config)
 
-    # -------------------------
     # Utilities
-    # -------------------------
     def _safe_onehot(self) -> OneHotEncoder:
         """
-        Sklearn compatibility:
-        - newer sklearn uses sparse_output=
-        - older sklearn uses sparse=
+        Compatible OneHotEncoder (sparse_output vs sparse for sklearn versions).
         """
         try:
             return OneHotEncoder(handle_unknown="ignore", sparse_output=True)
@@ -481,7 +474,7 @@ class DataTransformation:
 
     def _standardize_schema(self, df: pd.DataFrame, df_name: str) -> pd.DataFrame:
         """
-        Standardize schema early so downstream modules can rely on consistent naming.
+        Standardizes columns early for consistency.
         """
         if self.config.standardize_column_names:
             logging.info("[%s] Standardizing column names.", df_name)
@@ -492,6 +485,9 @@ class DataTransformation:
         return df
 
     def _validate_target_presence(self, train_df: pd.DataFrame, test_df: pd.DataFrame) -> None:
+        """
+        Ensures target exists (configurable for inference sets).
+        """
         target = self.config.target_column
         if target not in train_df.columns:
             raise ValueError(f"Target column '{target}' missing from train dataset.")
@@ -502,11 +498,8 @@ class DataTransformation:
 
     def _infer_columns(self, df: pd.DataFrame) -> Tuple[List[str], List[str]]:
         """
-        Infer numeric/categorical columns if config doesn't define them.
-
-        Important:
-        - Some datasets have numeric-looking strings; we attempt numeric coercion later.
-        - For production systems, explicit schema is best.
+        Infers or uses config for numeric/categorical columns.
+        Excludes target from predictors.
         """
         if self.config.numerical_columns is not None:
             numeric_cols = [c for c in self.config.numerical_columns if c in df.columns]
@@ -518,7 +511,6 @@ class DataTransformation:
         else:
             cat_cols = df.select_dtypes(include=["object", "category", "bool"]).columns.tolist()
 
-        # Ensure we never include target as a predictor
         target = self.config.target_column
         numeric_cols = [c for c in numeric_cols if c != target]
         cat_cols = [c for c in cat_cols if c != target]
@@ -527,8 +519,7 @@ class DataTransformation:
 
     def _coerce_numeric(self, df: pd.DataFrame, numeric_cols: List[str]) -> pd.DataFrame:
         """
-        Force numeric columns to numeric dtype (strings -> NaN).
-        This aligns with robust pipelines where imputers handle NaN.
+        Coerces to numeric (strings -> NaN for imputers).
         """
         df = df.copy()
         for col in numeric_cols:
@@ -538,13 +529,9 @@ class DataTransformation:
 
     def _build_preprocessor(self, numeric_features: List[str], categorical_features: List[str]) -> ColumnTransformer:
         """
-        Preprocessing:
-        - Numeric: median impute + standardize
-        - Categorical: most_frequent impute + onehot
-
-        Note:
-        - StandardScaler on numeric is common for linear models, neural nets, SVM, etc.
-        - For tree models, scaling isn't required but doesn't break things.
+        Builds pipeline: Numeric (impute median, scale); Categorical (impute mode, onehot).
+        
+        Rationale: Median robust to outliers; StandardScaler for scale-sensitive models.
         """
         numeric_pipeline = Pipeline(
             steps=[
@@ -569,20 +556,13 @@ class DataTransformation:
         )
         return preprocessor
 
-    # -------------------------
     # VIF
-    # -------------------------
     def _calculate_vif(self, df: pd.DataFrame, numeric_cols: List[str]) -> pd.DataFrame:
         """
-        Calculate VIF for numeric features only.
-        High VIF suggests multicollinearity which can destabilize:
-          - linear regression
-          - GLMs
-          - some gradient-based methods
-
-        Caveats:
-        - VIF requires statsmodels. If missing, we skip gracefully (but log).
-        - VIF can be sensitive; don't over-prune without domain reasoning.
+        Computes VIF for numerics to detect multicollinearity.
+        
+        High VIF (>10) can destabilize linear models; prune iteratively.
+        Skips if statsmodels missing or data insufficient.
         """
         if not self.config.enable_vif:
             return pd.DataFrame()
@@ -595,9 +575,7 @@ class DataTransformation:
             logging.info("VIF skipped: no numeric columns.")
             return pd.DataFrame()
 
-        # Work on numeric df only; drop rows with NA for VIF stability
-        X = df[numeric_cols].copy()
-        X = X.replace([np.inf, -np.inf], np.nan).dropna()
+        X = df[numeric_cols].copy().replace([np.inf, -np.inf], np.nan).dropna()
         if X.empty or X.shape[0] < 10:
             logging.warning("VIF skipped: insufficient non-missing numeric rows.")
             return pd.DataFrame()
@@ -611,9 +589,8 @@ class DataTransformation:
 
     def _prune_by_vif(self, train_df: pd.DataFrame, numeric_cols: List[str]) -> List[str]:
         """
-        Iteratively drop highest-VIF numeric features above threshold, up to max_features_to_drop.
-
-        We do *not* auto-drop exempt features (policy/business-critical).
+        Iteratively drops high-VIF features (recomputes after each).
+        Exempts critical features; limits drops.
         """
         if not self.config.enable_vif:
             return numeric_cols
@@ -622,7 +599,6 @@ class DataTransformation:
         if vif_df.empty:
             return numeric_cols
 
-        # Save report
         self.config.artifacts_dir.mkdir(parents=True, exist_ok=True)
         vif_df.to_csv(self.config.vif_report_path, index=False)
         logging.info("Saved VIF report: %s", self.config.vif_report_path)
@@ -630,7 +606,6 @@ class DataTransformation:
         remaining = numeric_cols[:]
         drops = 0
 
-        # Iterate: recompute after each drop (more accurate than one-shot)
         while drops < self.config.vif_max_features_to_drop:
             vif_df = self._calculate_vif(train_df, remaining)
             if vif_df.empty:
@@ -644,13 +619,13 @@ class DataTransformation:
                 break
 
             if top_feat in self.config.vif_exempt_features:
-                # If exempt is top, consider next non-exempt
                 non_exempt = vif_df[~vif_df["feature"].isin(self.config.vif_exempt_features)]
                 if non_exempt.empty:
                     logging.warning("All high-VIF features are exempt; stopping VIF pruning.")
                     break
-                top_feat = str(non_exempt.iloc[0]["feature"])
-                top_vif = float(non_exempt.iloc[0]["VIF"])
+                top = non_exempt.iloc[0]
+                top_feat = str(top["feature"])
+                top_vif = float(top["VIF"])
 
                 if top_vif <= self.config.vif_threshold:
                     break
@@ -660,71 +635,56 @@ class DataTransformation:
             drops += 1
 
         if drops > 0:
-            logging.info("VIF pruning dropped %s feature(s). Remaining numeric features: %s", drops, remaining)
+            logging.info("VIF pruning dropped %s feature(s). Remaining: %s", drops, remaining)
 
         return remaining
 
-    # -------------------------
     # Main entry
-    # -------------------------
     def initiate_data_transformation(
         self,
         train_path: str,
         test_path: str,
     ) -> Tuple[np.ndarray, np.ndarray, str]:
         """
+        End-to-end transformation.
+        
         Returns:
-            train_arr: np.ndarray -> concatenated [X_transformed | y_train]
-            test_arr:  np.ndarray -> concatenated [X_transformed | y_test] OR [X_transformed] if allowed missing target
-            preprocessor_path: str -> path to saved joblib preprocessor
+            train_arr: [X_train_transformed | y_train]
+            test_arr: [X_test_transformed | y_test] or [X_test_transformed] if y missing.
+            preprocessor_path: str
         """
         logging.info("Starting data transformation pipeline.")
         try:
-            # -------------------------
             # Load
-            # -------------------------
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
-
             logging.info("Loaded train shape: %s", train_df.shape)
             logging.info("Loaded test shape:  %s", test_df.shape)
 
-            # -------------------------
-            # Standardize schema
-            # -------------------------
+            # Standardize
             train_df = self._standardize_schema(train_df, "train")
             test_df = self._standardize_schema(test_df, "test")
 
             # Validate targets
             self._validate_target_presence(train_df, test_df)
 
-            # -------------------------
-            # Cleaning (optional)
-            # -------------------------
+            # Cleaning
             if self.config.enable_cleaning:
                 logging.info("Cleaning enabled.")
-                # Missing
                 train_df = DataCleaning.handle_missing_values(train_df, self.config.missing_value_strategy)
                 test_df = DataCleaning.handle_missing_values(test_df, self.config.missing_value_strategy)
-
-                # Duplicates
                 train_df = DataCleaning.handle_duplicates(train_df, self.config.drop_duplicates)
                 test_df = DataCleaning.handle_duplicates(test_df, self.config.drop_duplicates)
 
-            # -------------------------
-            # Feature engineering (optional)
-            # -------------------------
+            # Feature engineering
             if self.config.enable_feature_engineering:
                 logging.info("Feature engineering enabled.")
                 train_df = self.feature_engineer.add_features(train_df)
                 test_df = self.feature_engineer.add_features(test_df)
 
-            # -------------------------
-            # Column selection (config-driven; infer if needed)
-            # -------------------------
+            # Infer columns
             numeric_cols, cat_cols = self._infer_columns(train_df)
 
-            # If user wants only categorical predictors:
             if self.config.use_only_categorical:
                 numeric_cols = []
                 logging.info("Using ONLY categorical predictors (baseline mode).")
@@ -733,7 +693,7 @@ class DataTransformation:
             train_df = self._coerce_numeric(train_df, numeric_cols)
             test_df = self._coerce_numeric(test_df, numeric_cols)
 
-            # Optional outlier handling (never apply on target)
+            # Outliers (exclude target)
             if self.config.enable_cleaning and self.config.outlier_strategy is not None:
                 outlier_cols = (
                     list(self.config.outlier_numeric_cols)
@@ -745,6 +705,7 @@ class DataTransformation:
                     strategy=self.config.outlier_strategy,
                     lower_q=self.config.outlier_lower_q,
                     upper_q=self.config.outlier_upper_q,
+                    multiplier=self.config.outlier_multiplier,
                     numeric_cols=outlier_cols,
                     exclude_cols=[self.config.target_column],
                 )
@@ -753,102 +714,72 @@ class DataTransformation:
                     strategy=self.config.outlier_strategy,
                     lower_q=self.config.outlier_lower_q,
                     upper_q=self.config.outlier_upper_q,
+                    multiplier=self.config.outlier_multiplier,
                     numeric_cols=outlier_cols,
                     exclude_cols=[self.config.target_column],
                 )
 
-            # -------------------------
-            # EDA (optional, before VIF pruning so you can inspect raw distributions)
-            # -------------------------
+            # EDA
             if self.config.enable_eda:
-                logging.info("EDA enabled; saving diagnostic artifacts.")
+                logging.info("EDA enabled; saving artifacts.")
                 self.eda.run(train_df, df_name="train")
                 self.eda.run(test_df, df_name="test")
 
-            # -------------------------
-            # VIF pruning (optional; numeric only)
-            # -------------------------
-            if self.config.enable_vif:
-                logging.info("VIF enabled; checking multicollinearity on numeric predictors.")
-                numeric_cols = self._prune_by_vif(train_df, numeric_cols)
+            # VIF
+            numeric_cols = self._prune_by_vif(train_df, numeric_cols)
 
-            # Final safety checks
+            # Safety: Check predictors
             missing_predictors = [c for c in (numeric_cols + cat_cols) if c not in train_df.columns]
             if missing_predictors:
-                raise ValueError(
-                    f"Predictor columns missing from training data after processing: {missing_predictors}"
-                )
+                raise ValueError(f"Missing predictors: {missing_predictors}")
 
-            # -------------------------
-            # Split X / y
-            # -------------------------
+            # Split X/y
             target = self.config.target_column
-
             X_train = train_df[numeric_cols + cat_cols].copy()
             y_train = train_df[target].to_numpy()
 
-            # Test target may be missing if allowed
             X_test = test_df[numeric_cols + cat_cols].copy()
+            y_test = test_df[target].to_numpy() if target in test_df.columns else None
 
-            y_test = None
-            if target in test_df.columns:
-                y_test = test_df[target].to_numpy()
-            elif self.config.require_target_in_test:
-                raise ValueError(
-                    f"Target column '{target}' missing from test but require_target_in_test=True."
-                )
+            if y_test is None and self.config.require_target_in_test:
+                raise ValueError(f"Target '{target}' missing in test but required.")
 
-            logging.info("Selected numeric features (%s): %s", len(numeric_cols), numeric_cols)
-            logging.info("Selected categorical features (%s): %s", len(cat_cols), cat_cols)
-            logging.info("Target column: %s", target)
+            logging.info("Numeric features (%s): %s", len(numeric_cols), numeric_cols)
+            logging.info("Categorical features (%s): %s", len(cat_cols), cat_cols)
+            logging.info("Target: %s", target)
 
-            # -------------------------
-            # Build + fit preprocessor on train only
-            # -------------------------
-            preprocessor = self._build_preprocessor(
-                numeric_features=numeric_cols,
-                categorical_features=cat_cols,
-            )
-
-            logging.info("Fitting preprocessor on training data only.")
+            # Preprocessor fit/transform
+            preprocessor = self._build_preprocessor(numeric_cols, cat_cols)
+            logging.info("Fitting preprocessor on train.")
             X_train_processed = preprocessor.fit_transform(X_train)
             X_test_processed = preprocessor.transform(X_test)
 
-            # Optionally densify
+            # Densify if needed
             if self.config.force_dense_output:
                 if hasattr(X_train_processed, "toarray"):
                     X_train_processed = X_train_processed.toarray()
                 if hasattr(X_test_processed, "toarray"):
                     X_test_processed = X_test_processed.toarray()
 
-            # -------------------------
-            # Concatenate targets (trainer-friendly)
-            # -------------------------
+            # Concat
             train_arr = np.c_[X_train_processed, y_train]
+            test_arr = np.c_[X_test_processed, y_test] if y_test is not None else X_test_processed
 
-            if y_test is not None:
-                test_arr = np.c_[X_test_processed, y_test]
-            else:
-                # Kaggle-style inference set; return X only
-                test_arr = np.array(X_test_processed)
-
-            # -------------------------
-            # Save artifacts
-            # -------------------------
+            # Save
             self.config.artifacts_dir.mkdir(parents=True, exist_ok=True)
             joblib.dump(preprocessor, self.config.preprocessor_obj_file_path)
             np.save(self.config.transformed_train_file_path, train_arr)
             np.save(self.config.transformed_test_file_path, test_arr)
 
             logging.info("Saved preprocessor: %s", self.config.preprocessor_obj_file_path)
-            logging.info("Saved transformed train: %s", self.config.transformed_train_file_path)
-            logging.info("Saved transformed test:  %s", self.config.transformed_test_file_path)
-            logging.info("Transformation done. Train arr: %s | Test arr: %s", train_arr.shape, test_arr.shape)
+            logging.info("Saved train: %s", self.config.transformed_train_file_path)
+            logging.info("Saved test: %s", self.config.transformed_test_file_path)
+            logging.info("Shapes: Train %s | Test %s", train_arr.shape, test_arr.shape)
 
             return train_arr, test_arr, str(self.config.preprocessor_obj_file_path)
 
         except Exception as e:
-            logging.exception("Data transformation failed.")
+            logging.exception("Transformation failed.")
             raise CustomException(e, sys)
 
 
@@ -857,20 +788,16 @@ class DataTransformation:
 # ---------------------------------------------------------------------
 def _run_as_script() -> None:
     """
-    Script entrypoint:
-    - expects artifacts/train.csv and artifacts/test.csv to exist (from ingestion)
+    Script mode: Assumes ingestion outputs exist.
     """
     try:
         cfg = DataTransformationConfig()
-        logging.info("Running data_transformation as a script.")
-        logging.info("Expected train path: %s", cfg.train_data_path)
-        logging.info("Expected test path:  %s", cfg.test_data_path)
+        logging.info("Running data_transformation as script.")
+        logging.info("Train path: %s", cfg.train_data_path)
+        logging.info("Test path: %s", cfg.test_data_path)
 
         if not cfg.train_data_path.exists() or not cfg.test_data_path.exists():
-            raise FileNotFoundError(
-                "Could not find ingestion outputs. "
-                "Run data ingestion first to create artifacts/train.csv and artifacts/test.csv."
-            )
+            raise FileNotFoundError("Run ingestion first.")
 
         transformer = DataTransformation(cfg)
         train_arr, test_arr, preprocessor_path = transformer.initiate_data_transformation(
@@ -878,7 +805,7 @@ def _run_as_script() -> None:
             test_path=str(cfg.test_data_path),
         )
 
-        print("✅ Data Transformation complete")
+        print("✅ Transformation complete")
         print("Train array:", train_arr.shape)
         print("Test array:", test_arr.shape)
         print("Preprocessor:", preprocessor_path)

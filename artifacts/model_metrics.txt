@@ -6,10 +6,10 @@ TEST MAE: 556.521786
 
 Artifacts:
 - Leaderboard: artifacts\model_leaderboard.csv
-- Results DF: artifacts\results_predictions.csv
-- Feature importance: artifacts\feature_importance.csv
-- Residual hist: artifacts\residual_hist.png
-- Residual scatter: artifacts\residual_scatter.png
-- SHAP values: artifacts\shap_values.npz
-- SHAP dot: artifacts\shap_summary_dot.png
-- SHAP bar: artifacts\shap_summary_bar.png
+- Results: artifacts\results_predictions.csv
+- Importance: artifacts\feature_importance.csv
+- Hist: artifacts\residual_hist.png
+- Scatter: artifacts\residual_scatter.png
+- SHAP: artifacts\shap_values.npz
+- Dot: artifacts\shap_summary_dot.png
+- Bar: artifacts\shap_summary_bar.png
