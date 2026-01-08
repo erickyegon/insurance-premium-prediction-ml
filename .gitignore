@@ -1,0 +1,29 @@
+# Virtual Environment
+venv/
+env/
+.env
+__pycache__/
+*.py[cod]
+
+# Machine Learning / Data Science
+# Ignore large datasets (keep your data local)
+data/*.csv
+data/*.xlsx
+data/*.json
+
+# Ignore Large Model Files (Serialized models)
+*.pkl
+*.joblib
+*.h5
+*.onnx
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE Settings
+.vscode/
+.idea/

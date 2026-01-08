@@ -6,8 +6,8 @@ HYPEN_E_DOT = "-e ."
 
 def get_requirements(file_path:str)->  List[str]:
     """
-    Docstring for get_requirements
-    
+    Docstring for get_requirements that will retirn a list of requirments
+        
     :param file_path: Description
     :type file_path: str
     :return: Description
@@ -22,11 +22,11 @@ def get_requirements(file_path:str)->  List[str]:
     return requirements
 
 setup(
-    name="mlproject",
-    version="0.1.0",
+    name="Shield Insurance premium prediction",
+    version="0.0.1",
     author="Erick Yegon",
     author_email="keyegonaws@gmail.com",
-    description="A machine learning project setup",
+    description="A production-ready, end-to-end machine learning system for predicting health insurance premiums using demographic, lifestyle, and medical risk factors, featuring domain-driven feature engineering, multicollinearity control, and cloud-ready deployment.",
     packages=find_packages(),
     install_requires=get_requirements('requirements.txt'),
 )
