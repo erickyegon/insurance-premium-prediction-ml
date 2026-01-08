@@ -1,0 +1,40 @@
+feature,importance
+cat__insurance_plan_Gold,0.22624326
+cat__insurance_plan_Bronze,0.18675137
+cat__insurance_plan_Silver,0.17245021
+cat__medical_history_No Disease,0.13519806
+num__age,0.09075095
+cat__bmi_category_Normal,0.02740851
+cat__smoking_status_Regular,0.026401024
+cat__bmi_category_Obesity,0.023583228
+cat__medical_history_Heart disease,0.018895429
+cat__physical_activity_Low,0.016003642
+cat__stress_level_High,0.0139701925
+cat__bmi_category_Underweight,0.013852361
+cat__medical_history_High blood pressure & Heart disease,0.011165709
+cat__smoking_status_No Smoking,0.00985863
+cat__medical_history_Diabetes & Heart disease,0.006697357
+cat__medical_history_Diabetes & High blood pressure,0.003858471
+cat__medical_history_Diabetes & Thyroid,0.0035192543
+cat__stress_level_Low,0.0032047348
+cat__bmi_category_Overweight,0.0031019151
+cat__physical_activity_High,0.0030538253
+cat__marital_status_Married,0.0006742964
+cat__medical_history_Diabetes,0.0005288896
+cat__employment_status_Self-Employed,0.00043840526
+cat__medical_history_High blood pressure,0.00037019936
+cat__marital_status_Unmarried,0.00031002087
+cat__employment_status_Freelancer,0.00026283634
+cat__medical_history_Thyroid,0.00026113685
+num__number_of_dependants,0.00021139106
+cat__gender_Female,0.00013025968
+cat__smoking_status_Occasional,0.00011701412
+num__income_lakhs,0.00011654816
+cat__stress_level_Medium,8.8953624e-05
+cat__gender_Male,8.6484084e-05
+cat__region_Northeast,8.251517e-05
+cat__region_Northwest,8.011085e-05
+cat__region_Southwest,7.712448e-05
+cat__physical_activity_Medium,7.61395e-05
+cat__region_Southeast,6.0139e-05
+cat__employment_status_Salaried,5.9400852e-05

@@ -1,0 +1,4 @@
+feature_1,feature_2,correlation
+age,age_squared,0.9520189014300587
+income_lakhs,income_per_dependent,0.8603000192488831
+income_lakhs,log_income_lakhs,0.7030083268996314

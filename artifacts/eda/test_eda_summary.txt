@@ -1,0 +1,54 @@
+================================================================================
+DATA TRANSFORMATION - EDA SUMMARY: TEST
+================================================================================
+
+DATASET OVERVIEW
+--------------------------------------------------------------------------------
+Shape: 2,000 rows × 20 columns
+Memory usage: 1.49 MB
+
+Column Types:
+  object: 11 columns
+  int64: 7 columns
+  float64: 2 columns
+
+MISSING DATA
+--------------------------------------------------------------------------------
+Total missing values: 551
+Percentage of dataset: 1.38%
+
+Features with missing data (top 10):
+  income_per_dependent: 542 (27.10%)
+  income_level: 5 (0.25%)
+  smoking_status: 3 (0.15%)
+  employment_status: 1 (0.05%)
+
+STATISTICAL INSIGHTS
+--------------------------------------------------------------------------------
+Highly skewed features (7):
+  age: skewness = 17.65
+  number_of_dependants: skewness = 18.89
+  income_lakhs: skewness = 13.33
+  has_dependents: skewness = -1.03
+  income_per_dependent: skewness = 4.84
+
+Non-normal features (Shapiro test, p<0.05): 9
+
+CORRELATION INSIGHTS
+--------------------------------------------------------------------------------
+Top correlations with target (annual_premium_amount):
+  has_dependents: 0.345
+  log_income_lakhs: 0.255
+  age_income_interaction: 0.222
+  age: 0.198
+  income_lakhs: 0.156
+
+
+RECOMMENDATIONS
+--------------------------------------------------------------------------------
+• Apply log/sqrt transformation to 6 highly skewed features
+• Review outlier detection plots before deciding on outlier handling strategy
+
+================================================================================
+END OF REPORT
+================================================================================

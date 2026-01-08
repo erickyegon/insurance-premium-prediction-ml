@@ -1,0 +1,56 @@
+================================================================================
+DATA TRANSFORMATION - PIPELINE SUMMARY
+================================================================================
+
+INPUT DATA
+--------------------------------------------------------------------------------
+Train path: artifacts\train.csv
+Test path: artifacts\test.csv
+Train shape: (8000, 20)
+Test shape: (2000, 20)
+
+CONFIGURATION
+--------------------------------------------------------------------------------
+Target column: annual_premium_amount
+Cleaning enabled: True
+Feature engineering enabled: True
+EDA enabled: True
+VIF enabled: True
+Missing value strategy: keep
+Outlier strategy: None
+
+FEATURE SELECTION
+--------------------------------------------------------------------------------
+Numeric features: 3
+  age, number_of_dependants, income_lakhs
+Categorical features: 10
+  gender, region, marital_status, physical_activity, stress_level, bmi_category, smoking_status, employment_status, medical_history, insurance_plan
+
+PREPROCESSING PIPELINE
+--------------------------------------------------------------------------------
+Numeric pipeline:
+  1. SimpleImputer(strategy='median')
+  2. StandardScaler()
+
+Categorical pipeline:
+  1. SimpleImputer(strategy='most_frequent')
+  2. OneHotEncoder(handle_unknown='ignore')
+
+OUTPUT
+--------------------------------------------------------------------------------
+Final feature count (after one-hot): 39
+Train array: artifacts\train_transformed.npy
+Test array: artifacts\test_transformed.npy
+Preprocessor: artifacts\preprocessor.pkl
+
+EDA ARTIFACTS
+--------------------------------------------------------------------------------
+EDA directory: artifacts\eda
+  Distributions: artifacts\eda\distributions
+  Relationships: artifacts\eda\relationships
+  Outliers: artifacts\eda\outliers
+  Correlations: artifacts\eda\correlations
+
+================================================================================
+TRANSFORMATION COMPLETE - READY FOR MODEL TRAINING
+================================================================================

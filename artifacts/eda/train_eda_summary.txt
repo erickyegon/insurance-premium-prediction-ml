@@ -1,0 +1,54 @@
+================================================================================
+DATA TRANSFORMATION - EDA SUMMARY: TRAIN
+================================================================================
+
+DATASET OVERVIEW
+--------------------------------------------------------------------------------
+Shape: 8,000 rows × 20 columns
+Memory usage: 5.97 MB
+
+Column Types:
+  object: 11 columns
+  int64: 7 columns
+  float64: 2 columns
+
+MISSING DATA
+--------------------------------------------------------------------------------
+Total missing values: 2,112
+Percentage of dataset: 1.32%
+
+Features with missing data (top 10):
+  income_per_dependent: 2,087 (26.09%)
+  income_level: 13 (0.16%)
+  smoking_status: 6 (0.07%)
+  employment_status: 6 (0.07%)
+
+STATISTICAL INSIGHTS
+--------------------------------------------------------------------------------
+Highly skewed features (7):
+  age: skewness = 16.22
+  number_of_dependants: skewness = 18.95
+  income_lakhs: skewness = 12.92
+  has_dependents: skewness = -1.09
+  income_per_dependent: skewness = 24.18
+
+Non-normal features (Shapiro test, p<0.05): 9
+
+CORRELATION INSIGHTS
+--------------------------------------------------------------------------------
+Top correlations with target (annual_premium_amount):
+  has_dependents: 0.315
+  log_income_lakhs: 0.266
+  age_income_interaction: 0.242
+  age: 0.192
+  income_lakhs: 0.161
+
+
+RECOMMENDATIONS
+--------------------------------------------------------------------------------
+• Apply log/sqrt transformation to 6 highly skewed features
+• Review outlier detection plots before deciding on outlier handling strategy
+
+================================================================================
+END OF REPORT
+================================================================================
