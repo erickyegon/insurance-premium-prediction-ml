@@ -500,7 +500,7 @@ SHAP (SHapley Additive exPlanations) provides **transparent, interpretable** exp
 
 <div align="center">
 
-![SHAP Bar Plot](artifacts/shap/shap_summary_bar.png)
+![SHAP Bar Plot](artifacts/shap_summary_bar.png)
 
 *Global feature importance: Mean absolute SHAP values show which features matter most*
 
@@ -525,7 +525,7 @@ SHAP (SHapley Additive exPlanations) provides **transparent, interpretable** exp
 
 <div align="center">
 
-![SHAP Dot Plot](artifacts/shap/shap_summary_dot.png)
+![SHAP Dot Plot](artifacts/shap_summary_dot.png)
 
 *SHAP summary plot: Each dot is a customer, showing how feature values impact predictions*
 
