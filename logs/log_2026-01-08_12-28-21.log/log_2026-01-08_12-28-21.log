@@ -1,4 +1,0 @@
-[2026-01-08 12:28:21,883] 95  root - INFO - Starting data ingestion.
-[2026-01-08 12:28:21,914] 107  root - INFO - Dataset loaded. Shape: (10000, 15)
-[2026-01-08 12:28:21,976] 118  root - INFO - Raw data saved to: artifacts\data.csv
-[2026-01-08 12:28:22,051] 138  root - INFO - Train/Test saved. Train: artifacts\train.csv | Test: artifacts\test.csv

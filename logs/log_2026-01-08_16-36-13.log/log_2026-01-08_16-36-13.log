@@ -1,0 +1,176 @@
+[2026-01-08 16:36:14,272] 618  root - INFO - Running as script.
+[2026-01-08 16:36:14,274] 1904  root - INFO - 
+================================================================================
+[2026-01-08 16:36:14,274] 1905  root - INFO - STARTING DATA TRANSFORMATION PIPELINE
+[2026-01-08 16:36:14,274] 1906  root - INFO - ================================================================================
+[2026-01-08 16:36:14,274] 1910  root - INFO - 
+Step 1: Loading data...
+[2026-01-08 16:36:14,300] 1913  root - INFO -   Train shape: (8000, 15)
+[2026-01-08 16:36:14,300] 1914  root - INFO -   Test shape: (2000, 15)
+[2026-01-08 16:36:14,301] 1917  root - INFO - 
+Step 2: Standardizing schema...
+[2026-01-08 16:36:14,301] 1560  root - INFO - [train] Standardizing column names.
+[2026-01-08 16:36:14,302] 1566  root - INFO - [train] Shape after standardization: (8000, 15)
+[2026-01-08 16:36:14,302] 1560  root - INFO - [test] Standardizing column names.
+[2026-01-08 16:36:14,303] 1566  root - INFO - [test] Shape after standardization: (2000, 15)
+[2026-01-08 16:36:14,303] 1922  root - INFO - 
+Step 3: Validating target column...
+[2026-01-08 16:36:14,303] 1594  root - INFO - Target validation passed: 'annual_premium_amount' found in datasets.
+[2026-01-08 16:36:14,303] 1927  root - INFO - 
+Step 4: Cleaning data...
+[2026-01-08 16:36:14,307] 308  root - INFO - Missing-value strategy=keep: 25 NA values will be handled by imputers.
+[2026-01-08 16:36:14,309] 308  root - INFO - Missing-value strategy=keep: 9 NA values will be handled by imputers.
+[2026-01-08 16:36:14,320] 1941  root - INFO - 
+Step 5: Feature engineering...
+[2026-01-08 16:36:14,321] 1430  root - INFO - Target leakage prevention active: no target-derived features created.
+[2026-01-08 16:36:14,322] 1446  root - INFO -   Added feature: has_dependents
+[2026-01-08 16:36:14,323] 1456  root - INFO -   Added feature: income_per_dependent
+[2026-01-08 16:36:14,324] 1465  root - INFO -   Added feature: log_income_lakhs
+[2026-01-08 16:36:14,325] 1473  root - INFO -   Added feature: age_squared
+[2026-01-08 16:36:14,325] 1482  root - INFO -   Added feature: age_income_interaction
+[2026-01-08 16:36:14,326] 1484  root - INFO - Feature engineering completed: 5 new features created.
+[2026-01-08 16:36:14,326] 1430  root - INFO - Target leakage prevention active: no target-derived features created.
+[2026-01-08 16:36:14,326] 1446  root - INFO -   Added feature: has_dependents
+[2026-01-08 16:36:14,327] 1456  root - INFO -   Added feature: income_per_dependent
+[2026-01-08 16:36:14,328] 1465  root - INFO -   Added feature: log_income_lakhs
+[2026-01-08 16:36:14,328] 1473  root - INFO -   Added feature: age_squared
+[2026-01-08 16:36:14,329] 1482  root - INFO -   Added feature: age_income_interaction
+[2026-01-08 16:36:14,329] 1484  root - INFO - Feature engineering completed: 5 new features created.
+[2026-01-08 16:36:14,329] 1948  root - INFO - 
+Step 6: Inferring feature types...
+[2026-01-08 16:36:14,329] 1615  root - INFO - Using configured numeric columns: 3
+[2026-01-08 16:36:14,329] 1623  root - INFO - Using configured categorical columns: 10
+[2026-01-08 16:36:14,329] 1955  root - INFO -   Numeric features: 3
+[2026-01-08 16:36:14,329] 1956  root - INFO -   Categorical features: 10
+[2026-01-08 16:36:14,334] 1990  root - INFO - 
+Step 8: Outlier handling disabled (skipped)
+[2026-01-08 16:36:14,334] 1994  root - INFO - 
+Step 9: Performing comprehensive EDA...
+[2026-01-08 16:36:14,334] 500  root - INFO - 
+================================================================================
+[2026-01-08 16:36:14,334] 501  root - INFO - STARTING ENHANCED EDA: TRAIN
+[2026-01-08 16:36:14,334] 502  root - INFO - ================================================================================
+[2026-01-08 16:36:14,368] 578  root - INFO - \u2713 Saved basic statistics: artifacts\eda\train_stats_summary.csv
+[2026-01-08 16:36:14,383] 604  root - INFO - \u2713 Saved missingness report: artifacts\eda\train_missingness.csv
+[2026-01-08 16:36:14,867] 627  root - INFO - \u2713 Saved missing data visualization
+[2026-01-08 16:36:14,869] 657  root - INFO - Generating distribution plots for 9 numeric features...
+[2026-01-08 16:36:20,568] 698  root - INFO - \u2713 Saved distribution plots to artifacts\eda\distributions
+[2026-01-08 16:36:20,570] 728  root - INFO - Generating Q-Q plots for 9 numeric features...
+[2026-01-08 16:36:26,789] 749  root - INFO - \u2713 Saved Q-Q plots to artifacts\eda\distributions
+[2026-01-08 16:36:26,790] 780  root - INFO - Computing extended statistical summary...
+[2026-01-08 16:36:26,838] 821  root - INFO - \u2713 Saved statistical summary: artifacts\eda\train_statistical_summary.csv
+[2026-01-08 16:36:26,839] 855  root - INFO - Generating categorical analysis for 11 features...
+[2026-01-08 16:36:34,460] 895  root - INFO - \u2713 Saved categorical analysis to artifacts\eda\distributions
+[2026-01-08 16:36:34,460] 920  root - INFO - Analyzing target variable: annual_premium_amount
+[2026-01-08 16:36:36,044] 980  root - INFO - \u2713 Saved target analysis
+[2026-01-08 16:36:36,045] 1004  root - INFO - Generating bivariate analysis (features vs target)...
+[2026-01-08 16:36:52,754] 1081  root - INFO - \u2713 Saved bivariate analysis to artifacts\eda\relationships
+[2026-01-08 16:36:52,755] 1105  root - INFO - Generating outlier detection plots...
+[2026-01-08 16:36:53,777] 1127  root - INFO - \u2713 Saved outlier detection plots to artifacts\eda\outliers
+[2026-01-08 16:36:53,778] 1155  root - INFO - Performing correlation analysis...
+[2026-01-08 16:36:53,784] 1163  root - INFO - \u2713 Saved correlation matrix: artifacts\eda\correlations\train_correlation.csv
+[2026-01-08 16:36:53,788] 1182  root - INFO - \u2713 Found 3 high correlation pairs (|r| > 0.7)
+[2026-01-08 16:36:54,821] 1226  root - INFO - \u2713 Saved correlation heatmap
+[2026-01-08 16:36:54,842] 1375  root - INFO - \u2713 Saved comprehensive EDA summary: artifacts\eda\train_eda_summary.txt
+[2026-01-08 16:36:54,842] 556  root - INFO - 
+================================================================================
+[2026-01-08 16:36:54,842] 557  root - INFO - EDA COMPLETE: TRAIN
+[2026-01-08 16:36:54,842] 558  root - INFO - ================================================================================
+[2026-01-08 16:36:54,842] 500  root - INFO - 
+================================================================================
+[2026-01-08 16:36:54,842] 501  root - INFO - STARTING ENHANCED EDA: TEST
+[2026-01-08 16:36:54,842] 502  root - INFO - ================================================================================
+[2026-01-08 16:36:54,875] 578  root - INFO - \u2713 Saved basic statistics: artifacts\eda\test_stats_summary.csv
+[2026-01-08 16:36:54,884] 604  root - INFO - \u2713 Saved missingness report: artifacts\eda\test_missingness.csv
+[2026-01-08 16:36:55,614] 627  root - INFO - \u2713 Saved missing data visualization
+[2026-01-08 16:36:55,615] 657  root - INFO - Generating distribution plots for 9 numeric features...
+[2026-01-08 16:37:02,972] 698  root - INFO - \u2713 Saved distribution plots to artifacts\eda\distributions
+[2026-01-08 16:37:02,973] 728  root - INFO - Generating Q-Q plots for 9 numeric features...
+[2026-01-08 16:37:12,114] 749  root - INFO - \u2713 Saved Q-Q plots to artifacts\eda\distributions
+[2026-01-08 16:37:12,115] 780  root - INFO - Computing extended statistical summary...
+[2026-01-08 16:37:12,207] 821  root - INFO - \u2713 Saved statistical summary: artifacts\eda\test_statistical_summary.csv
+[2026-01-08 16:37:12,209] 855  root - INFO - Generating categorical analysis for 11 features...
+[2026-01-08 16:37:27,729] 895  root - INFO - \u2713 Saved categorical analysis to artifacts\eda\distributions
+[2026-01-08 16:37:27,730] 920  root - INFO - Analyzing target variable: annual_premium_amount
+[2026-01-08 16:37:29,036] 980  root - INFO - \u2713 Saved target analysis
+[2026-01-08 16:37:29,036] 1004  root - INFO - Generating bivariate analysis (features vs target)...
+[2026-01-08 16:37:45,839] 1081  root - INFO - \u2713 Saved bivariate analysis to artifacts\eda\relationships
+[2026-01-08 16:37:45,841] 1105  root - INFO - Generating outlier detection plots...
+[2026-01-08 16:37:46,631] 1127  root - INFO - \u2713 Saved outlier detection plots to artifacts\eda\outliers
+[2026-01-08 16:37:46,632] 1155  root - INFO - Performing correlation analysis...
+[2026-01-08 16:37:46,636] 1163  root - INFO - \u2713 Saved correlation matrix: artifacts\eda\correlations\test_correlation.csv
+[2026-01-08 16:37:46,641] 1182  root - INFO - \u2713 Found 2 high correlation pairs (|r| > 0.7)
+[2026-01-08 16:37:47,952] 1226  root - INFO - \u2713 Saved correlation heatmap
+[2026-01-08 16:37:47,966] 1375  root - INFO - \u2713 Saved comprehensive EDA summary: artifacts\eda\test_eda_summary.txt
+[2026-01-08 16:37:47,966] 556  root - INFO - 
+================================================================================
+[2026-01-08 16:37:47,966] 557  root - INFO - EDA COMPLETE: TEST
+[2026-01-08 16:37:47,966] 558  root - INFO - ================================================================================
+[2026-01-08 16:37:47,966] 2001  root - INFO - 
+Step 10: Checking multicollinearity (VIF)...
+[2026-01-08 16:37:47,969] 1757  root - INFO - Computing VIF for 3 numeric features...
+[2026-01-08 16:37:47,977] 1805  root - INFO - \u2713 Saved initial VIF report: artifacts\vif_report.csv
+[2026-01-08 16:37:47,980] 1757  root - INFO - Computing VIF for 3 numeric features...
+[2026-01-08 16:37:47,985] 1830  root - INFO - VIF pruning complete: all features have VIF <= 10.0
+[2026-01-08 16:37:47,985] 1863  root - INFO - No features dropped by VIF pruning.
+[2026-01-08 16:37:47,985] 2005  root - INFO - 
+Step 11: Validating predictor availability...
+[2026-01-08 16:37:47,985] 2011  root - INFO -   Final predictor count: 13
+[2026-01-08 16:37:47,986] 2012  root - INFO -     Numeric: ['age', 'number_of_dependants', 'income_lakhs']
+[2026-01-08 16:37:47,986] 2013  root - INFO -     Categorical: ['gender', 'region', 'marital_status', 'physical_activity', 'stress_level', 'bmi_category', 'smoking_status', 'employment_status', 'medical_history', 'insurance_plan']
+[2026-01-08 16:37:47,986] 2016  root - INFO - 
+Step 12: Splitting features and target...
+[2026-01-08 16:37:47,990] 2027  root - INFO -   X_train: (8000, 13)
+[2026-01-08 16:37:47,991] 2028  root - INFO -   y_train: (8000,)
+[2026-01-08 16:37:47,991] 2029  root - INFO -   X_test: (2000, 13)
+[2026-01-08 16:37:47,991] 2031  root - INFO -   y_test: (2000,)
+[2026-01-08 16:37:47,991] 2034  root - INFO - 
+Step 13: Building preprocessing pipeline...
+[2026-01-08 16:37:47,991] 1682  root - INFO - 
+Building preprocessing pipeline:
+[2026-01-08 16:37:47,991] 1683  root - INFO -   Numeric features: 3
+[2026-01-08 16:37:47,991] 1684  root - INFO -   Categorical features: 10
+[2026-01-08 16:37:47,991] 2037  root - INFO - Fitting preprocessor on training data...
+[2026-01-08 16:37:48,037] 2039  root - INFO -   Transformed train shape: (8000, 39)
+[2026-01-08 16:37:48,037] 2041  root - INFO - Transforming test data...
+[2026-01-08 16:37:48,050] 2043  root - INFO -   Transformed test shape: (2000, 39)
+[2026-01-08 16:37:48,050] 2055  root - INFO - 
+Step 15: Concatenating features and target...
+[2026-01-08 16:37:48,053] 2062  root - INFO -   Final train array: (8000, 40)
+[2026-01-08 16:37:48,053] 2063  root - INFO -   Final test array: (2000, 40)
+[2026-01-08 16:37:48,053] 2066  root - INFO - 
+Step 16: Saving artifacts...
+[2026-01-08 16:37:48,058] 2070  root - INFO -   \u2713 Saved preprocessor: artifacts\preprocessor.pkl
+[2026-01-08 16:37:48,061] 2073  root - INFO -   \u2713 Saved train array: artifacts\train_transformed.npy
+[2026-01-08 16:37:48,063] 2076  root - INFO -   \u2713 Saved test array: artifacts\test_transformed.npy
+[2026-01-08 16:37:48,063] 2079  root - INFO - 
+Step 17: Generating transformation summary...
+[2026-01-08 16:37:48,064] 2189  root - INFO - \u2713 Saved transformation summary: artifacts\eda\transformation_summary.txt
+[2026-01-08 16:37:48,064] 2085  root - INFO - 
+================================================================================
+[2026-01-08 16:37:48,064] 2086  root - INFO - TRANSFORMATION PIPELINE COMPLETE
+[2026-01-08 16:37:48,064] 2087  root - INFO - ================================================================================
+[2026-01-08 16:37:48,064] 2088  root - INFO - All artifacts saved to: C:\2026 Projects\Shield Insurance\artifacts
+[2026-01-08 16:37:48,065] 628  root - INFO - Preprocessor: artifacts\preprocessor.pkl
+[2026-01-08 16:37:48,066] 507  root - INFO - Starting training.
+[2026-01-08 16:37:48,066] 514  root - INFO - Train: X=(8000, 39) y=(8000,)
+[2026-01-08 16:37:48,066] 515  root - INFO - Test: X=(2000, 39) y=(2000,)
+[2026-01-08 16:37:48,068] 520  root - INFO - Internal: Train=(6400, 39) Val=(1600, 39)
+[2026-01-08 16:37:48,071] 530  root - INFO - Baseline: LinearRegression
+[2026-01-08 16:37:48,098] 538  root - INFO - Baseline: Ridge
+[2026-01-08 16:37:48,110] 547  root - INFO - Baseline: Lasso
+[2026-01-08 16:37:48,482] 324  root - INFO - RandomizedSearchCV for XGBoost (n_iter=20, cv=3).
+[2026-01-08 16:38:15,859] 329  root - INFO - Best params: {'subsample': 1.0, 'reg_lambda': 1.0, 'reg_alpha': 0.01, 'n_estimators': 300, 'min_child_weight': 5, 'max_depth': 3, 'learning_rate': 0.2, 'colsample_bytree': 0.7}
+[2026-01-08 16:38:15,859] 330  root - INFO - Best CV score: 0.993110
+[2026-01-08 16:38:15,859] 333  root - INFO - Early-stopping refinement.
+[2026-01-08 16:38:15,859] 351  root - WARNING - Early stopping skipped; using CV-best.
+[2026-01-08 16:38:15,870] 571  root - INFO - Saved leaderboard: artifacts\model_leaderboard.csv
+[2026-01-08 16:38:15,878] 575  root - INFO - Saved model: artifacts\model.pkl
+[2026-01-08 16:38:15,903] 180  root - INFO - Saved results_df: artifacts\results_predictions.csv
+[2026-01-08 16:38:17,729] 272  root - INFO - Saved residuals: artifacts\residual_hist.png | artifacts\residual_scatter.png
+[2026-01-08 16:38:17,737] 206  root - INFO - Saved feature_importances_: artifacts\feature_importance.csv
+[2026-01-08 16:38:20,161] 407  root - INFO - TreeExplainer: bg=(500, 39), ex=(1000, 39)
+[2026-01-08 16:38:20,191] 455  root - WARNING - TreeExplainer failed; fallback. could not convert string to float: '[1.9488639E4]'
+[2026-01-08 16:38:20,192] 459  root - INFO - Fallback Explainer.
+[2026-01-08 16:39:37,280] 471  root - INFO - Saved SHAP (fallback): artifacts\shap_values.npz
+[2026-01-08 16:39:39,681] 603  root - INFO - Winner: XGBoost(RandomSearch) | R2=0.9934

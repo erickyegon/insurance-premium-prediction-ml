@@ -1,0 +1,159 @@
+[2026-01-08 16:34:23,517] 2202  root - INFO - 
+================================================================================
+[2026-01-08 16:34:23,518] 2203  root - INFO - RUNNING DATA TRANSFORMATION AS SCRIPT
+[2026-01-08 16:34:23,518] 2204  root - INFO - ================================================================================
+[2026-01-08 16:34:23,518] 2208  root - INFO - Configuration loaded:
+[2026-01-08 16:34:23,518] 2209  root - INFO -   Train path: artifacts\train.csv
+[2026-01-08 16:34:23,518] 2210  root - INFO -   Test path: artifacts\test.csv
+[2026-01-08 16:34:23,521] 1904  root - INFO - 
+================================================================================
+[2026-01-08 16:34:23,521] 1905  root - INFO - STARTING DATA TRANSFORMATION PIPELINE
+[2026-01-08 16:34:23,521] 1906  root - INFO - ================================================================================
+[2026-01-08 16:34:23,521] 1910  root - INFO - 
+Step 1: Loading data...
+[2026-01-08 16:34:23,551] 1913  root - INFO -   Train shape: (8000, 15)
+[2026-01-08 16:34:23,551] 1914  root - INFO -   Test shape: (2000, 15)
+[2026-01-08 16:34:23,551] 1917  root - INFO - 
+Step 2: Standardizing schema...
+[2026-01-08 16:34:23,551] 1560  root - INFO - [train] Standardizing column names.
+[2026-01-08 16:34:23,555] 1566  root - INFO - [train] Shape after standardization: (8000, 15)
+[2026-01-08 16:34:23,555] 1560  root - INFO - [test] Standardizing column names.
+[2026-01-08 16:34:23,556] 1566  root - INFO - [test] Shape after standardization: (2000, 15)
+[2026-01-08 16:34:23,556] 1922  root - INFO - 
+Step 3: Validating target column...
+[2026-01-08 16:34:23,556] 1594  root - INFO - Target validation passed: 'annual_premium_amount' found in datasets.
+[2026-01-08 16:34:23,556] 1927  root - INFO - 
+Step 4: Cleaning data...
+[2026-01-08 16:34:23,560] 308  root - INFO - Missing-value strategy=keep: 25 NA values will be handled by imputers.
+[2026-01-08 16:34:23,561] 308  root - INFO - Missing-value strategy=keep: 9 NA values will be handled by imputers.
+[2026-01-08 16:34:23,576] 1941  root - INFO - 
+Step 5: Feature engineering...
+[2026-01-08 16:34:23,577] 1430  root - INFO - Target leakage prevention active: no target-derived features created.
+[2026-01-08 16:34:23,578] 1446  root - INFO -   Added feature: has_dependents
+[2026-01-08 16:34:23,579] 1456  root - INFO -   Added feature: income_per_dependent
+[2026-01-08 16:34:23,581] 1465  root - INFO -   Added feature: log_income_lakhs
+[2026-01-08 16:34:23,581] 1473  root - INFO -   Added feature: age_squared
+[2026-01-08 16:34:23,582] 1482  root - INFO -   Added feature: age_income_interaction
+[2026-01-08 16:34:23,582] 1484  root - INFO - Feature engineering completed: 5 new features created.
+[2026-01-08 16:34:23,582] 1430  root - INFO - Target leakage prevention active: no target-derived features created.
+[2026-01-08 16:34:23,583] 1446  root - INFO -   Added feature: has_dependents
+[2026-01-08 16:34:23,583] 1456  root - INFO -   Added feature: income_per_dependent
+[2026-01-08 16:34:23,585] 1465  root - INFO -   Added feature: log_income_lakhs
+[2026-01-08 16:34:23,585] 1473  root - INFO -   Added feature: age_squared
+[2026-01-08 16:34:23,586] 1482  root - INFO -   Added feature: age_income_interaction
+[2026-01-08 16:34:23,586] 1484  root - INFO - Feature engineering completed: 5 new features created.
+[2026-01-08 16:34:23,586] 1948  root - INFO - 
+Step 6: Inferring feature types...
+[2026-01-08 16:34:23,586] 1615  root - INFO - Using configured numeric columns: 3
+[2026-01-08 16:34:23,586] 1623  root - INFO - Using configured categorical columns: 10
+[2026-01-08 16:34:23,586] 1955  root - INFO -   Numeric features: 3
+[2026-01-08 16:34:23,586] 1956  root - INFO -   Categorical features: 10
+[2026-01-08 16:34:23,590] 1990  root - INFO - 
+Step 8: Outlier handling disabled (skipped)
+[2026-01-08 16:34:23,590] 1994  root - INFO - 
+Step 9: Performing comprehensive EDA...
+[2026-01-08 16:34:23,590] 500  root - INFO - 
+================================================================================
+[2026-01-08 16:34:23,590] 501  root - INFO - STARTING ENHANCED EDA: TRAIN
+[2026-01-08 16:34:23,590] 502  root - INFO - ================================================================================
+[2026-01-08 16:34:23,629] 578  root - INFO - \u2713 Saved basic statistics: artifacts\eda\train_stats_summary.csv
+[2026-01-08 16:34:23,639] 604  root - INFO - \u2713 Saved missingness report: artifacts\eda\train_missingness.csv
+[2026-01-08 16:34:24,486] 627  root - INFO - \u2713 Saved missing data visualization
+[2026-01-08 16:34:24,488] 657  root - INFO - Generating distribution plots for 9 numeric features...
+[2026-01-08 16:34:29,887] 698  root - INFO - \u2713 Saved distribution plots to artifacts\eda\distributions
+[2026-01-08 16:34:29,888] 728  root - INFO - Generating Q-Q plots for 9 numeric features...
+[2026-01-08 16:34:35,306] 749  root - INFO - \u2713 Saved Q-Q plots to artifacts\eda\distributions
+[2026-01-08 16:34:35,309] 780  root - INFO - Computing extended statistical summary...
+[2026-01-08 16:34:35,355] 821  root - INFO - \u2713 Saved statistical summary: artifacts\eda\train_statistical_summary.csv
+[2026-01-08 16:34:35,357] 855  root - INFO - Generating categorical analysis for 11 features...
+[2026-01-08 16:34:41,298] 895  root - INFO - \u2713 Saved categorical analysis to artifacts\eda\distributions
+[2026-01-08 16:34:41,298] 920  root - INFO - Analyzing target variable: annual_premium_amount
+[2026-01-08 16:34:42,570] 980  root - INFO - \u2713 Saved target analysis
+[2026-01-08 16:34:42,571] 1004  root - INFO - Generating bivariate analysis (features vs target)...
+[2026-01-08 16:34:57,161] 1081  root - INFO - \u2713 Saved bivariate analysis to artifacts\eda\relationships
+[2026-01-08 16:34:57,162] 1105  root - INFO - Generating outlier detection plots...
+[2026-01-08 16:34:58,039] 1127  root - INFO - \u2713 Saved outlier detection plots to artifacts\eda\outliers
+[2026-01-08 16:34:58,041] 1155  root - INFO - Performing correlation analysis...
+[2026-01-08 16:34:58,048] 1163  root - INFO - \u2713 Saved correlation matrix: artifacts\eda\correlations\train_correlation.csv
+[2026-01-08 16:34:58,052] 1182  root - INFO - \u2713 Found 3 high correlation pairs (|r| > 0.7)
+[2026-01-08 16:34:59,008] 1226  root - INFO - \u2713 Saved correlation heatmap
+[2026-01-08 16:34:59,027] 1375  root - INFO - \u2713 Saved comprehensive EDA summary: artifacts\eda\train_eda_summary.txt
+[2026-01-08 16:34:59,027] 556  root - INFO - 
+================================================================================
+[2026-01-08 16:34:59,027] 557  root - INFO - EDA COMPLETE: TRAIN
+[2026-01-08 16:34:59,028] 558  root - INFO - ================================================================================
+[2026-01-08 16:34:59,028] 500  root - INFO - 
+================================================================================
+[2026-01-08 16:34:59,028] 501  root - INFO - STARTING ENHANCED EDA: TEST
+[2026-01-08 16:34:59,028] 502  root - INFO - ================================================================================
+[2026-01-08 16:34:59,057] 578  root - INFO - \u2713 Saved basic statistics: artifacts\eda\test_stats_summary.csv
+[2026-01-08 16:34:59,065] 604  root - INFO - \u2713 Saved missingness report: artifacts\eda\test_missingness.csv
+[2026-01-08 16:34:59,500] 627  root - INFO - \u2713 Saved missing data visualization
+[2026-01-08 16:34:59,501] 657  root - INFO - Generating distribution plots for 9 numeric features...
+[2026-01-08 16:35:05,408] 698  root - INFO - \u2713 Saved distribution plots to artifacts\eda\distributions
+[2026-01-08 16:35:05,409] 728  root - INFO - Generating Q-Q plots for 9 numeric features...
+[2026-01-08 16:35:10,323] 749  root - INFO - \u2713 Saved Q-Q plots to artifacts\eda\distributions
+[2026-01-08 16:35:10,324] 780  root - INFO - Computing extended statistical summary...
+[2026-01-08 16:35:10,368] 821  root - INFO - \u2713 Saved statistical summary: artifacts\eda\test_statistical_summary.csv
+[2026-01-08 16:35:10,369] 855  root - INFO - Generating categorical analysis for 11 features...
+[2026-01-08 16:35:17,077] 895  root - INFO - \u2713 Saved categorical analysis to artifacts\eda\distributions
+[2026-01-08 16:35:17,077] 920  root - INFO - Analyzing target variable: annual_premium_amount
+[2026-01-08 16:35:18,191] 980  root - INFO - \u2713 Saved target analysis
+[2026-01-08 16:35:18,191] 1004  root - INFO - Generating bivariate analysis (features vs target)...
+[2026-01-08 16:35:32,463] 1081  root - INFO - \u2713 Saved bivariate analysis to artifacts\eda\relationships
+[2026-01-08 16:35:32,464] 1105  root - INFO - Generating outlier detection plots...
+[2026-01-08 16:35:33,310] 1127  root - INFO - \u2713 Saved outlier detection plots to artifacts\eda\outliers
+[2026-01-08 16:35:33,311] 1155  root - INFO - Performing correlation analysis...
+[2026-01-08 16:35:33,317] 1163  root - INFO - \u2713 Saved correlation matrix: artifacts\eda\correlations\test_correlation.csv
+[2026-01-08 16:35:33,322] 1182  root - INFO - \u2713 Found 2 high correlation pairs (|r| > 0.7)
+[2026-01-08 16:35:34,389] 1226  root - INFO - \u2713 Saved correlation heatmap
+[2026-01-08 16:35:34,399] 1375  root - INFO - \u2713 Saved comprehensive EDA summary: artifacts\eda\test_eda_summary.txt
+[2026-01-08 16:35:34,399] 556  root - INFO - 
+================================================================================
+[2026-01-08 16:35:34,399] 557  root - INFO - EDA COMPLETE: TEST
+[2026-01-08 16:35:34,399] 558  root - INFO - ================================================================================
+[2026-01-08 16:35:34,399] 2001  root - INFO - 
+Step 10: Checking multicollinearity (VIF)...
+[2026-01-08 16:35:34,402] 1757  root - INFO - Computing VIF for 3 numeric features...
+[2026-01-08 16:35:34,410] 1805  root - INFO - \u2713 Saved initial VIF report: artifacts\vif_report.csv
+[2026-01-08 16:35:34,412] 1757  root - INFO - Computing VIF for 3 numeric features...
+[2026-01-08 16:35:34,417] 1830  root - INFO - VIF pruning complete: all features have VIF <= 10.0
+[2026-01-08 16:35:34,417] 1863  root - INFO - No features dropped by VIF pruning.
+[2026-01-08 16:35:34,417] 2005  root - INFO - 
+Step 11: Validating predictor availability...
+[2026-01-08 16:35:34,417] 2011  root - INFO -   Final predictor count: 13
+[2026-01-08 16:35:34,417] 2012  root - INFO -     Numeric: ['age', 'number_of_dependants', 'income_lakhs']
+[2026-01-08 16:35:34,417] 2013  root - INFO -     Categorical: ['gender', 'region', 'marital_status', 'physical_activity', 'stress_level', 'bmi_category', 'smoking_status', 'employment_status', 'medical_history', 'insurance_plan']
+[2026-01-08 16:35:34,417] 2016  root - INFO - 
+Step 12: Splitting features and target...
+[2026-01-08 16:35:34,421] 2027  root - INFO -   X_train: (8000, 13)
+[2026-01-08 16:35:34,421] 2028  root - INFO -   y_train: (8000,)
+[2026-01-08 16:35:34,421] 2029  root - INFO -   X_test: (2000, 13)
+[2026-01-08 16:35:34,421] 2031  root - INFO -   y_test: (2000,)
+[2026-01-08 16:35:34,421] 2034  root - INFO - 
+Step 13: Building preprocessing pipeline...
+[2026-01-08 16:35:34,422] 1682  root - INFO - 
+Building preprocessing pipeline:
+[2026-01-08 16:35:34,422] 1683  root - INFO -   Numeric features: 3
+[2026-01-08 16:35:34,422] 1684  root - INFO -   Categorical features: 10
+[2026-01-08 16:35:34,422] 2037  root - INFO - Fitting preprocessor on training data...
+[2026-01-08 16:35:34,471] 2039  root - INFO -   Transformed train shape: (8000, 39)
+[2026-01-08 16:35:34,471] 2041  root - INFO - Transforming test data...
+[2026-01-08 16:35:34,485] 2043  root - INFO -   Transformed test shape: (2000, 39)
+[2026-01-08 16:35:34,486] 2055  root - INFO - 
+Step 15: Concatenating features and target...
+[2026-01-08 16:35:34,487] 2062  root - INFO -   Final train array: (8000, 40)
+[2026-01-08 16:35:34,487] 2063  root - INFO -   Final test array: (2000, 40)
+[2026-01-08 16:35:34,487] 2066  root - INFO - 
+Step 16: Saving artifacts...
+[2026-01-08 16:35:34,493] 2070  root - INFO -   \u2713 Saved preprocessor: artifacts\preprocessor.pkl
+[2026-01-08 16:35:34,496] 2073  root - INFO -   \u2713 Saved train array: artifacts\train_transformed.npy
+[2026-01-08 16:35:34,498] 2076  root - INFO -   \u2713 Saved test array: artifacts\test_transformed.npy
+[2026-01-08 16:35:34,498] 2079  root - INFO - 
+Step 17: Generating transformation summary...
+[2026-01-08 16:35:34,499] 2189  root - INFO - \u2713 Saved transformation summary: artifacts\eda\transformation_summary.txt
+[2026-01-08 16:35:34,499] 2085  root - INFO - 
+================================================================================
+[2026-01-08 16:35:34,499] 2086  root - INFO - TRANSFORMATION PIPELINE COMPLETE
+[2026-01-08 16:35:34,499] 2087  root - INFO - ================================================================================
+[2026-01-08 16:35:34,500] 2088  root - INFO - All artifacts saved to: C:\2026 Projects\Shield Insurance\artifacts
