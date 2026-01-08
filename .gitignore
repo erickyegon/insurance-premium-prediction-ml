@@ -24,6 +24,8 @@ data/*.json
 .DS_Store
 Thumbs.db
 
+artifacts/
+
 # IDE Settings
 .vscode/
 .idea/
